@@ -6,6 +6,17 @@ A Minecraft Paper plugin for creating, tracking, and visualizing player movement
 
 TrailTracker allows players to record their movements as paths, save them for future use, and display them to other players using particles. Perfect for creating guided tours, marking important routes, highlighting player-created trails, and enhancing navigation on your server.
 
+### Features
+
+- **Create Paths**: Record your movement to create custom paths
+- **Visualize Paths**: Display saved paths using particles
+- **Manage Paths**: Add descriptions, view details, and remove paths
+- **Path Detection**: Get notified when traveling on or near a path
+- **Configurable**: Customize particles, detection radius, and more
+- **Permission-Based**: Control who can create, edit, and view paths
+- **User-Friendly**: Simple commands with tab completion
+- **Version Compatible**: Works across multiple Minecraft versions
+
 ## Beta Testing
 
 TrailTracker is currently in beta testing. We welcome your feedback and contributions!
@@ -28,17 +39,6 @@ Please refer to [TESTING.md](TESTING.md) for comprehensive testing guidelines an
 ### Version Compatibility
 
 For information about version compatibility, see [VERSION_COMPATIBILITY.md](VERSION_COMPATIBILITY.md).
-
-### Features
-
-- **Create Paths**: Record your movement to create custom paths
-- **Visualize Paths**: Display saved paths using particles
-- **Manage Paths**: Add descriptions, view details, and remove paths
-- **Path Detection**: Get notified when traveling on or near a path
-- **Configurable**: Customize particles, detection radius, and more
-- **Permission-Based**: Control who can create, edit, and view paths
-- **User-Friendly**: Simple commands with tab completion
-- **Version Compatible**: Works across multiple Minecraft versions
 
 ## Version Compatibility
 
