@@ -12,14 +12,14 @@ TrailTracker is currently in beta testing. We welcome your feedback and contribu
 
 ### Current Beta Version
 
-**Version 1.1.0-beta.1** - [Download](https://github.com/YOUR_USERNAME/TrailTracker/releases/tag/v1.1.0-beta.1)
+**Version 1.1.0-beta.1** - [Download](https://github.com/alvarsjogren/TrailTracker/releases/tag/v1.1.0-beta.1)
 
 ### How to Participate in Testing
 
-1. Download the latest beta release from the [Releases page](https://github.com/YOUR_USERNAME/TrailTracker/releases)
+1. Download the latest beta release from the [Releases page](https://github.com/alvarsjogren/TrailTracker/releases)
 2. Install on your test server
-3. Join the [Beta Testing Discussion](https://github.com/YOUR_USERNAME/TrailTracker/discussions) to share your feedback
-4. Report bugs by creating [Issues](https://github.com/YOUR_USERNAME/TrailTracker/issues)
+3. Join the [Beta Testing Discussion](https://github.com/alvarsjogren/TrailTracker/discussions) to share your feedback
+4. Report bugs by creating [Issues](https://github.com/alvarsjogren/TrailTracker/issues)
 
 ### Testing Guidelines
 
