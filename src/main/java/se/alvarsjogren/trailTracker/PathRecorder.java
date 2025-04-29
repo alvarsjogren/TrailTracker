@@ -98,7 +98,7 @@ public class PathRecorder {
             return new Result(false, "A path with that name already exists.");
         }
         trackedPaths.put(playerUUID, pathName);
-        paths.put(pathName, new Path(pathName));
+        paths.put(pathName, new Path(pathName, 3));
         return new Result(true, "Success");
     }
 
@@ -137,7 +137,7 @@ public class PathRecorder {
         // Thread-safe check and add
         synchronized (path) {
             if (!path.getTrackedPath().contains(checkLocation)) {
-                path.addLocationToPath(checkLocation.toCenterLocation());
+                path.putLocationToPath(checkLocation.toCenterLocation());
             }
         }
     }

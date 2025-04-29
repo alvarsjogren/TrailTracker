@@ -7,14 +7,15 @@ import org.bukkit.entity.Player;
 import java.util.ArrayList;
 
 public class Path {
-    private int pathVersion;
+    private int version;
     private final String name;
     private String description = "";
+    private int radius;
     private final ArrayList<Location> trackedPath = new ArrayList<>();
 
-
-    public Path(String name) {
+    public Path(String name, int pathRadius) {
         this.name = name;
+        this.radius = pathRadius;
     }
 
     public String getName() {
@@ -25,23 +26,31 @@ public class Path {
         return description;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setDescription(String pathDescription) {
+        this.description = pathDescription;
     }
 
     public ArrayList<Location> getTrackedPath() {
         return trackedPath;
     }
 
-    public void setVersion(int version) {
-        this.pathVersion = version;
-    }
-
     public int getVersion() {
-        return this.pathVersion;
+        return this.version;
     }
 
-    public void addLocationToPath(Location location) {
+    public void setVersion(int pathVersion) {
+        this.version = pathVersion;
+    }
+
+    public int getRadius() {
+        return radius;
+    }
+
+    public void setRadius(int radius) {
+        this.radius = radius;
+    }
+
+    public void putLocationToPath(Location location) {
         this.trackedPath.add(location);
     }
 
