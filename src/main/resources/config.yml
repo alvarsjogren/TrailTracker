@@ -38,3 +38,9 @@ travel-message: "Traveling {path-name}"
 # Action bar text when recording paths. {path-name} will be replaced with the path name
 # This appears above the hotbar when a player is actively recording a path
 recording-message: "Recording {path-name}"
+
+### Plugin metrics ###
+# Enable or disable bStats metrics collection
+# bStats collects anonymous usage data to help developers improve the plugin
+# See https://bstats.org/plugin/bukkit/TrailTracker/25685 for details
+enable-metrics: true

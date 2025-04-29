@@ -38,6 +38,14 @@
                         <goals>
                             <goal>shade</goal>
                         </goals>
+                        <configuration>
+                            <relocations>
+                                <relocation>
+                                    <pattern>org.bstats</pattern>
+                                    <shadedPattern>se.alvarsjogren.trailTracker.libraries.bstats</shadedPattern>
+                                </relocation>
+                            </relocations>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -72,6 +80,12 @@
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
             <version>2.13.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.bstats</groupId>
+            <artifactId>bstats-bukkit</artifactId>
+            <version>3.0.2</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 </project>
