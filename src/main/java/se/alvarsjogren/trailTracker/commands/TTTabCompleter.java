@@ -12,15 +12,25 @@ import se.alvarsjogren.trailTracker.commands.subCommands.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
+/**
+ * Tab completer for TrailTracker commands.
+ * Provides command completion suggestions based on context.
+ */
 public class TTTabCompleter implements TabCompleter {
     private final List<SubCommand> subCommands;
     private final PathRecorder pathRecorder;
 
+    /**
+     * Creates a new TTTabCompleter.
+     *
+     * @param subCommands The list of subcommands to provide completion for
+     * @param plugin The TrailTracker plugin instance
+     */
     public TTTabCompleter(List<SubCommand> subCommands, TrailTracker plugin) {
         this.subCommands = subCommands;
         pathRecorder = plugin.pathRecorder;
-
     }
 
     @Override
@@ -28,48 +38,48 @@ public class TTTabCompleter implements TabCompleter {
         List<String> completions = new ArrayList<>();
 
         if (args.length == 1) {
-            for (SubCommand subCommand : subCommands) {
-                if (subCommand.getName().toLowerCase().startsWith(args[0].toLowerCase())) {
-                    completions.add(subCommand.getName());
+            // First argument is always the subcommand name
+            completions = subCommands.stream()
+                    .map(SubCommand::getName)
+                    .filter(name -> name.toLowerCase().startsWith(args[0].toLowerCase()))
+                    .collect(Collectors.toList());
+        } else if (args.length == 2) {
+            // Second argument depends on the first argument (subcommand)
+            switch (args[0].toLowerCase()) {
+                case "remove":
+                case "describe":
+                case "info":
+                    // Complete with path names
+                    completions = pathRecorder.getPaths().values().stream()
+                            .map(Path::getName)
+                            .filter(name -> name.toLowerCase().startsWith(args[1].toLowerCase()))
+                            .collect(Collectors.toList());
+                    break;
+                case "display":
+                    // Complete with "on" or "off"
+                    if ("on".startsWith(args[1].toLowerCase())) completions.add("on");
+                    if ("off".startsWith(args[1].toLowerCase())) completions.add("off");
+                    break;
+            }
+        } else if (args.length == 3) {
+            // Third argument depends on the first and second arguments
+            if (args[0].equalsIgnoreCase("display")) {
+                if (args[1].equalsIgnoreCase("on")) {
+                    // Complete with available paths
+                    completions = pathRecorder.getPaths().values().stream()
+                            .map(Path::getName)
+                            .filter(name -> name.toLowerCase().startsWith(args[2].toLowerCase()))
+                            .collect(Collectors.toList());
+                } else if (args[1].equalsIgnoreCase("off") && commandSender instanceof Player player) {
+                    // Complete with paths the player is displaying
+                    var playerPaths = pathRecorder.getDisplayedPaths().get(player.getUniqueId());
+                    if (playerPaths != null) {
+                        completions = playerPaths.stream()
+                                .filter(name -> name.toLowerCase().startsWith(args[2].toLowerCase()))
+                                .collect(Collectors.toList());
+                    }
                 }
             }
-        } else {
-            if (args.length == 2) {
-                if (args[0].equals("remove")) {
-                    for (Path path : pathRecorder.getPaths().values()) {
-                        completions.add(path.getName());
-                    }
-                }
-                if (args[0].equals("describe")) {
-                    for (Path path : pathRecorder.getPaths().values()) {
-                        completions.add(path.getName());
-                    }
-                }
-                if (args[0].equals("display")) {
-                    completions.add("on");
-                    completions.add("off");
-                }
-
-            } else {
-                if (args.length == 3) {
-                    if (args[0].equals("display")) {
-                        if (args[1].equals("on")) {
-                            for (Path path : pathRecorder.getPaths().values()) {
-                                completions.add(path.getName());
-                            }
-                        }
-                        if (args[1].equals("off")) {
-                            if (commandSender instanceof Player player) {
-                                if (pathRecorder.getDisplayedPaths().containsKey(player.getUniqueId())) {
-                                    completions.addAll(pathRecorder.getDisplayedPaths().get(player.getUniqueId()));
-                                }
-                            }
-                        }
-
-                    }
-                }
-            }
-            // Option for more stuff!
         }
 
         return completions;

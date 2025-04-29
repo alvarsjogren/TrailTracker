@@ -13,12 +13,24 @@ import se.alvarsjogren.trailTracker.commands.subCommands.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Main command executor for the TrailTracker plugin.
+ * Handles the routing of commands to the appropriate subcommand handlers.
+ */
 public class TTCommandExecutor implements CommandExecutor {
 
     private final List<SubCommand> subCommands = new ArrayList<>();
+    private final TrailTracker plugin;
 
-    // Add new commands here!
+    /**
+     * Creates a new TTCommandExecutor.
+     *
+     * @param plugin The TrailTracker plugin instance
+     */
     public TTCommandExecutor(TrailTracker plugin) {
+        this.plugin = plugin;
+
+        // Register all subcommands
         subCommands.add(new HelpCommand(subCommands));
         subCommands.add(new StartCommand(plugin));
         subCommands.add(new StopCommand(plugin));
@@ -26,6 +38,7 @@ public class TTCommandExecutor implements CommandExecutor {
         subCommands.add(new RemoveCommand(plugin));
         subCommands.add(new DisplayCommand(plugin));
         subCommands.add(new DescribeCommand(plugin));
+        subCommands.add(new InfoCommand(plugin));
     }
 
     @Override
@@ -42,6 +55,7 @@ public class TTCommandExecutor implements CommandExecutor {
             return true;
         }
 
+        // Try to find matching subcommand
         for (SubCommand subCommand : subCommands) {
             if (args[0].equalsIgnoreCase(subCommand.getName())) {
                 subCommand.perform(sender, args);
@@ -49,6 +63,7 @@ public class TTCommandExecutor implements CommandExecutor {
             }
         }
 
+        // No matching subcommand found
         final TextComponent text = Component
                 .text("[tt] ")
                 .color(TextColor.color(0x102E50))
@@ -59,6 +74,11 @@ public class TTCommandExecutor implements CommandExecutor {
         return true;
     }
 
+    /**
+     * Gets the list of registered subcommands.
+     *
+     * @return The list of subcommands
+     */
     public List<SubCommand> getSubCommands() {
         return subCommands;
     }

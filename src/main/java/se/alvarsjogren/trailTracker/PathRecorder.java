@@ -3,13 +3,9 @@ package se.alvarsjogren.trailTracker;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitTask;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -20,19 +16,67 @@ public class PathRecorder {
     private final Map<String, Path> paths = new ConcurrentHashMap<>();
     private final Map<UUID, String> trackedPaths = new ConcurrentHashMap<>();
     private final Map<UUID, Set<String>> displayedPaths = new ConcurrentHashMap<>();
+    private final Map<UUID, Long> lastTrackedTime = new ConcurrentHashMap<>();
 
     private final TrailTracker plugin;
     private Particle displayParticle;
+    private int maxPathNameLength;
+    private int maxPathPoints;
+    private BukkitTask displayTask;
+    private int particleFrequency;
+    private int defaultPathRadius;
 
+    /**
+     * Creates a new PathRecorder with the specified plugin instance.
+     *
+     * @param plugin The TrailTracker plugin instance
+     */
     public PathRecorder(TrailTracker plugin) {
         this.plugin = plugin;
+        loadConfigValues();
+    }
 
+    /**
+     * Loads configuration values from the plugin configuration.
+     */
+    public void loadConfigValues() {
         try {
-            displayParticle = Particle.valueOf(plugin.getConfig().getString("default-display-particle"));
+            String particleName = plugin.getConfig().getString("default-display-particle", "HAPPY_VILLAGER");
+            displayParticle = Particle.valueOf(particleName);
         } catch (IllegalArgumentException e) {
-            plugin.getLogger().warning("Cant load default-display-particle. Will use HAPPY_VILLAGER");
-            displayParticle= Particle.HAPPY_VILLAGER;
+            plugin.getLogger().warning("Invalid default-display-particle in config. Using HAPPY_VILLAGER.");
+            displayParticle = Particle.HAPPY_VILLAGER;
         }
+
+        maxPathNameLength = plugin.getConfig().getInt("max-path-name-length", 32);
+        maxPathPoints = plugin.getConfig().getInt("max-path-points", 0); // 0 means unlimited
+        particleFrequency = plugin.getConfig().getInt("particle-frequency", 5);
+        defaultPathRadius = plugin.getConfig().getInt("default-path-radius", 3);
+
+        // Start task to display paths if not already running
+        startDisplayTask();
+    }
+
+    /**
+     * Starts the task that displays paths to players at the configured frequency.
+     */
+    private void startDisplayTask() {
+        // Cancel existing task if it exists
+        if (displayTask != null && !displayTask.isCancelled()) {
+            displayTask.cancel();
+        }
+
+        // Start new task
+        displayTask = plugin.getServer().getScheduler().runTaskTimer(
+                plugin,
+                () -> {
+                    for (Player player : plugin.getServer().getOnlinePlayers()) {
+                        displayPaths(player);
+                    }
+                },
+                20L, // Initial delay (1 second)
+                Math.max(1, particleFrequency) // Make sure frequency is at least 1 tick
+        );
     }
 
     /**
@@ -101,18 +145,39 @@ public class PathRecorder {
     /**
      * Starts tracking a new path for a player.
      * @param playerUUID The UUID of the player
+     * @param playerName The name of the player (for attribution)
      * @param pathName The name of the path to track
      * @return Result of the operation
      */
-    public synchronized Result startTrackingPath(UUID playerUUID, String pathName) {
+    public synchronized Result startTrackingPath(UUID playerUUID, String playerName, String pathName) {
         if (trackedPaths.containsKey(playerUUID)) {
             return new Result(false, "You are already tracking a path.");
         }
+
         if (paths.containsKey(pathName)) {
             return new Result(false, "A path with that name already exists.");
         }
+
+        // Check if path name exceeds maximum length
+        if (maxPathNameLength > 0 && pathName.length() > maxPathNameLength) {
+            return new Result(false, "Path name is too long. Maximum length is " + maxPathNameLength + " characters.");
+        }
+
+        // Check for invalid characters in path name
+        if (!pathName.matches("[a-zA-Z0-9_\\-\\s]+")) {
+            return new Result(false, "Path name contains invalid characters. Use only letters, numbers, spaces, underscores, and hyphens.");
+        }
+
+        // Create new path with configuration values
+        Path path = new Path(pathName, defaultPathRadius);
+        path.setCreatedBy(playerName);
+        path.setCreationDate(new Date());
+        path.setMaxPoints(maxPathPoints);
+
         trackedPaths.put(playerUUID, pathName);
-        paths.put(pathName, new Path(pathName, 3));
+        paths.put(pathName, path);
+        lastTrackedTime.put(playerUUID, System.currentTimeMillis());
+
         return new Result(true, "Success");
     }
 
@@ -125,12 +190,16 @@ public class PathRecorder {
         if (!trackedPaths.containsKey(playerUUID)) {
             return new Result(false, "You are not tracking any paths.");
         }
+
         trackedPaths.remove(playerUUID);
+        lastTrackedTime.remove(playerUUID);
+
         return new Result(true, "Success");
     }
 
     /**
      * Tracks the player's movement and adds it to their current path.
+     * Records all movement, only skipping when player is completely still.
      * @param player The player to track
      */
     public void trackPaths(Player player) {
@@ -146,13 +215,22 @@ public class PathRecorder {
             return; // Safety check in case path was removed
         }
 
+        // Add a small throttle to prevent excessive updates
+        // This is just to avoid server performance issues, not to filter points
+        long now = System.currentTimeMillis();
+        Long lastTime = lastTrackedTime.get(playerUUID);
+
+        if (lastTime != null && now - lastTime < 100) { // Reduced from 200ms to 100ms for more granular tracking
+            return;
+        }
+
+        lastTrackedTime.put(playerUUID, now);
+
         Location checkLocation = player.getLocation().clone().add(0, 0.3, 0);
 
         // Thread-safe check and add
         synchronized (path) {
-            if (!path.getTrackedPath().contains(checkLocation)) {
-                path.putLocationToPath(checkLocation.toCenterLocation());
-            }
+            path.putLocationToPath(checkLocation.toCenterLocation());
         }
     }
 

@@ -8,9 +8,17 @@ import se.alvarsjogren.trailTracker.utilities.UITextComponents;
 
 import java.util.Arrays;
 
+/**
+ * Command that starts tracking a new path.
+ */
 public class StartCommand implements SubCommand{
     private final PathRecorder pathRecorder;
 
+    /**
+     * Creates a new StartCommand.
+     *
+     * @param plugin The TrailTracker plugin instance
+     */
     public StartCommand(TrailTracker plugin) {
         this.pathRecorder = plugin.pathRecorder;
     }
@@ -22,7 +30,7 @@ public class StartCommand implements SubCommand{
 
     @Override
     public String getDescription() {
-        return "Starts tracking the path.";
+        return "Starts tracking a new path.";
     }
 
     @Override
@@ -32,17 +40,29 @@ public class StartCommand implements SubCommand{
 
     @Override
     public void perform(CommandSender sender, String[] args) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage(UITextComponents.errorMessage("Only a player can use this command."));
+            return;
+        }
 
-        if (sender instanceof Player player) {
-            if (player.hasPermission("TrailTracker.startstop")) {
-                if (args.length >= 2) {
-                    String pathName = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
-                    PathRecorder.Result result = pathRecorder.startTrackingPath(player.getUniqueId(), pathName);
-                    if (result.flag) {
-                        player.sendMessage(UITextComponents.successMessage("Started tracking path", pathName));
-                    } else player.sendMessage(UITextComponents.errorMessage(result.message));
-                } else player.sendMessage(UITextComponents.errorMessage("Wrong usage. Use /tt help for usage."));
-            } else player.sendMessage(UITextComponents.errorMessage("You are not allowed to use that command."));
-        } else sender.sendMessage(UITextComponents.errorMessage("Only a player can use this command."));
+        if (!player.hasPermission("TrailTracker.startstop")) {
+            player.sendMessage(UITextComponents.errorMessage("You are not allowed to use that command."));
+            return;
+        }
+
+        if (args.length < 2) {
+            player.sendMessage(UITextComponents.errorMessage("Wrong usage. Use /tt help for usage."));
+            return;
+        }
+
+        String pathName = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
+        // Pass player name for attribution
+        PathRecorder.Result result = pathRecorder.startTrackingPath(player.getUniqueId(), player.getName(), pathName);
+
+        if (result.flag) {
+            player.sendMessage(UITextComponents.successMessage("Started tracking path", pathName));
+        } else {
+            player.sendMessage(UITextComponents.errorMessage(result.message));
+        }
     }
 }

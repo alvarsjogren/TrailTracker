@@ -1,10 +1,22 @@
 ### Storage settings ###
+# Folder where path files are stored
 path-folder: "paths"
+# Maximum number of locations to store per path (0 = unlimited)
+max-path-points: 0
+# Maximum allowed path name length
+max-path-name-length: 32
 
 ### Display settings ###
+# Particle to use for displaying paths
+# Available options: https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/Particle.html
 default-display-particle: "HAPPY_VILLAGER"
+# Default radius around path points where players are considered "on path"
+default-path-radius: 3
+# How frequently to display particles (in ticks, 20 ticks = 1 second)
+particle-frequency: 5
 
-# Default action bar text when traveling paths
+### Messages ###
+# Action bar text when traveling paths. {path-name} will be replaced with the path name
 travel-message: "Traveling {path-name}"
-# Default action bar text when recording paths
+# Action bar text when recording paths. {path-name} will be replaced with the path name
 recording-message: "Recording {path-name}"

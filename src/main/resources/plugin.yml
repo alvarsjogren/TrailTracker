@@ -4,7 +4,7 @@ main: se.alvarsjogren.trailTracker.TrailTracker
 api-version: '1.21'
 prefix: TrailTracker
 authors: [ Alvar Sjögren ]
-description: TODO
+description: A plugin for creating, tracking, and visualizing player movement paths in the Minecraft world.
 website: alvarsjogren.se
 commands:
   tt:
@@ -13,8 +13,11 @@ commands:
     aliases: [trailtracker]
 permissions:
   TrailTracker.startstop:
-    description: Allows player to do /tt start <path> & /tt stop & /tt remove <path>
+    description: Allows player to do /tt start <path>, /tt stop, /tt remove <path>, and /tt describe <path>
     default: op
   TrailTracker.display:
     description: Allows player to do /tt display <path>
+    default: true
+  TrailTracker.info:
+    description: Allows player to do /tt info <path>
     default: true

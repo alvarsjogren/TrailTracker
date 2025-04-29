@@ -9,6 +9,10 @@ import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Manages the storage and retrieval of path data.
+ * Handles serialization and deserialization of path objects to/from JSON files.
+ */
 public class StorageManager {
     private final TrailTracker plugin;
     private final Gson gson = new GsonBuilder()
@@ -17,6 +21,11 @@ public class StorageManager {
             .create();
     private final File pathsFolder;
 
+    /**
+     * Creates a new StorageManager.
+     *
+     * @param plugin The TrailTracker plugin instance
+     */
     public StorageManager(TrailTracker plugin) {
         this.plugin = plugin;
 
@@ -41,6 +50,9 @@ public class StorageManager {
         }
     }
 
+    /**
+     * Saves all current paths to disk.
+     */
     public void save() {
         HashMap<String, Path> currentPaths = (HashMap<String, Path>) plugin.pathRecorder.getPaths();
         HashMap<String, File> existingFiles = new HashMap<>();
@@ -57,20 +69,33 @@ public class StorageManager {
             return; // Exit if files cannot be listed
         }
 
+        int savedCount = 0;
+
         // Save all current paths
         for (Map.Entry<String, Path> entry : currentPaths.entrySet()) {
             try {
                 savePath(entry.getValue());
                 existingFiles.remove(sanitizeFileName(entry.getKey())); // Remove based on sanitized name
+                savedCount++;
             } catch (Exception e) {
                 plugin.getLogger().warning("Failed to save path: " + entry.getKey() + " - Error: " + e.getMessage());
             }
         }
 
+        plugin.getLogger().info("Saved " + savedCount + " paths to disk.");
+
         // Delete or move old path files that are no longer used
-        deleteOldPathFiles(existingFiles);
+        if (!existingFiles.isEmpty()) {
+            deleteOldPathFiles(existingFiles);
+        }
     }
 
+    /**
+     * Saves a single path to disk.
+     *
+     * @param path The path to save
+     * @throws RuntimeException If saving fails
+     */
     private void savePath(Path path) {
         String safeFileName = sanitizeFileName(path.getName());
         File pathFile = new File(pathsFolder, safeFileName + ".json");
@@ -80,13 +105,17 @@ public class StorageManager {
 
         try (Writer writer = new FileWriter(pathFile, false)) {
             gson.toJson(path, writer);
-            plugin.getLogger().info("Saved path: " + path.getName());
         } catch (IOException e) {
             plugin.getLogger().warning("Failed to save path: " + path.getName() + " to file: " + pathFile.getAbsolutePath() + " - Error: " + e.getMessage());
             throw new RuntimeException(e);
         }
     }
 
+    /**
+     * Moves old path files to a backup folder.
+     *
+     * @param leftoverFiles Map of files to move
+     */
     private void deleteOldPathFiles(Map<String, File> leftoverFiles) {
         int movedCount = 0;
 
@@ -105,7 +134,6 @@ public class StorageManager {
             File target = new File(deletedFolder, leftoverFile.getName());
             if (leftoverFile.renameTo(target)) {
                 movedCount++;
-                plugin.getLogger().info("Moved old path file to backup: " + target.getPath());
             } else {
                 plugin.getLogger().warning("Failed to move old path file to backup: " + leftoverFile.getName());
             }
@@ -113,12 +141,12 @@ public class StorageManager {
 
         if (movedCount > 0) {
             plugin.getLogger().info("Moved " + movedCount + " old path file(s) to 'deleted' folder.");
-        } else {
-            plugin.getLogger().info("No old path files to move.");
         }
     }
 
-
+    /**
+     * Loads all paths from disk.
+     */
     public void load() {
         if (!pathsFolder.exists()) {
             plugin.getLogger().warning("Path folder does not exist: " + pathsFolder.getAbsolutePath());
@@ -132,6 +160,8 @@ public class StorageManager {
         }
 
         HashMap<String, Path> loadedPaths = new HashMap<>();
+        int successCount = 0;
+        int errorCount = 0;
 
         for (File file : files) {
             try (Reader reader = new FileReader(file)) {
@@ -149,13 +179,17 @@ public class StorageManager {
 
                 if (path != null && path.getName() != null) {
                     loadedPaths.put(path.getName(), path);
+                    successCount++;
                 } else {
                     plugin.getLogger().warning("Path file " + file.getName() + " is missing a name! Skipping...");
+                    errorCount++;
                 }
             } catch (JsonSyntaxException e) {
                 plugin.getLogger().warning("Invalid JSON syntax in " + file.getName() + ": " + e.getMessage());
+                errorCount++;
             } catch (IOException e) {
                 plugin.getLogger().warning("Failed to load path from " + file.getName() + " - Error: " + e.getMessage());
+                errorCount++;
             }
         }
 
@@ -163,10 +197,16 @@ public class StorageManager {
             plugin.getLogger().info("No valid paths loaded.");
         } else {
             plugin.pathRecorder.setPaths(loadedPaths);
-            plugin.getLogger().info("Loaded " + loadedPaths.size() + " paths from folder.");
+            plugin.getLogger().info("Loaded " + successCount + " paths from folder. Errors: " + errorCount);
         }
     }
 
+    /**
+     * Sanitizes a filename to ensure it's safe for file system operations.
+     *
+     * @param input The input string
+     * @return A sanitized filename
+     */
     private String sanitizeFileName(String input) {
         return input.replaceAll("[^a-zA-Z0-9-_]", "_");
     }
