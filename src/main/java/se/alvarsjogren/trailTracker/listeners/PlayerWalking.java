@@ -16,12 +16,16 @@ import se.alvarsjogren.trailTracker.PathRecorder;
 import se.alvarsjogren.trailTracker.TrailTracker;
 
 import java.util.Collection;
+import java.util.Objects;
 
 public class PlayerWalking implements Listener {
     private final PathRecorder pathRecorder;
     private final FileConfiguration config;
 
     private Particle displayParticle;
+    private String travelingMessage;
+    private String recordMessage;
+
 
     public PlayerWalking(TrailTracker plugin) {
         this.pathRecorder = plugin.pathRecorder;
@@ -30,8 +34,20 @@ public class PlayerWalking implements Listener {
         try {
             displayParticle = Particle.valueOf(plugin.getConfig().getString("default-display-particle"));
         } catch (IllegalArgumentException e) {
-            plugin.getLogger().warning("Cant load default display particle. Will use HAPPY_VILLAGER");
+            plugin.getLogger().warning("Cant load default display particle. Will use plugin default");
             displayParticle= Particle.HAPPY_VILLAGER;
+        }
+        try {
+            travelingMessage = Objects.requireNonNull(plugin.getConfig().getString("travel-message")).replace("{path-name}", "");
+        } catch (NullPointerException e) {
+            plugin.getLogger().warning("Cant load travel message. Will use plugin default");
+            travelingMessage = "Traveling ";
+        }
+        try {
+            recordMessage = Objects.requireNonNull(plugin.getConfig().getString("recording-message")).replace("{path-name}", "");
+        } catch (NullPointerException e) {
+            plugin.getLogger().warning("Cant load recording message. Will use plugin default");
+            recordMessage = "Recording ";
         }
     }
 
@@ -46,7 +62,7 @@ public class PlayerWalking implements Listener {
                         Collection<Player> closePlayers = location.getNearbyPlayers(config.getInt("path-radius"));
                         for (Player closePlayer : closePlayers) {
                             final TextComponent text = Component
-                                    .text("Traveling ")
+                                    .text(travelingMessage)
                                     .color(TextColor.color(0xF5C45E))
                                     .append(Component
                                             .text(path.getName())
@@ -63,7 +79,7 @@ public class PlayerWalking implements Listener {
                 Path path = pathRecorder.getPaths().get(pathName);
 
                 final TextComponent text = Component
-                        .text("Recording ")
+                        .text(recordMessage)
                         .color(TextColor.color(0xF5C45E))
                         .append(Component
                                 .text(path.getName())
