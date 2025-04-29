@@ -40,6 +40,11 @@ public class TTTabCompleter implements TabCompleter {
                         completions.add(path.getName());
                     }
                 }
+                if (args[0].equals("describe")) {
+                    for (Path path : pathRecorder.getPaths().values()) {
+                        completions.add(path.getName());
+                    }
+                }
                 if (args[0].equals("display")) {
                     completions.add("on");
                     completions.add("off");
