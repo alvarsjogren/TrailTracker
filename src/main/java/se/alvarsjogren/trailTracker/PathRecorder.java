@@ -21,6 +21,20 @@ public class PathRecorder {
     private final Map<UUID, String> trackedPaths = new ConcurrentHashMap<>();
     private final Map<UUID, Set<String>> displayedPaths = new ConcurrentHashMap<>();
 
+    private final TrailTracker plugin;
+    private Particle displayParticle;
+
+    public PathRecorder(TrailTracker plugin) {
+        this.plugin = plugin;
+
+        try {
+            displayParticle = Particle.valueOf(plugin.getConfig().getString("default-display-particle"));
+        } catch (IllegalArgumentException e) {
+            plugin.getLogger().warning("Cant load default-display-particle. Will use HAPPY_VILLAGER");
+            displayParticle= Particle.HAPPY_VILLAGER;
+        }
+    }
+
     /**
      * Result class for returning operation status and messages.
      */
@@ -234,7 +248,7 @@ public class PathRecorder {
         for (String pathName : new HashSet<>(playerPaths)) { // Copy to avoid concurrent modification
             Path path = paths.get(pathName);
             if (path != null) {
-                path.displayPath(player, Particle.HAPPY_VILLAGER);
+                path.displayPath(player, displayParticle);
             } else {
                 // Path has been removed but is still in player's display list
                 playerPaths.remove(pathName);

@@ -21,9 +21,18 @@ public class PlayerWalking implements Listener {
     private final PathRecorder pathRecorder;
     private final FileConfiguration config;
 
+    private Particle displayParticle;
+
     public PlayerWalking(TrailTracker plugin) {
         this.pathRecorder = plugin.pathRecorder;
         this.config = plugin.getConfig();
+
+        try {
+            displayParticle = Particle.valueOf(plugin.getConfig().getString("default-display-particle"));
+        } catch (IllegalArgumentException e) {
+            plugin.getLogger().warning("Cant load default display particle. Will use HAPPY_VILLAGER");
+            displayParticle= Particle.HAPPY_VILLAGER;
+        }
     }
 
     @EventHandler
@@ -62,7 +71,7 @@ public class PlayerWalking implements Listener {
                                 .decoration(TextDecoration.BOLD, true));
                 player.sendActionBar(text);
 
-                path.displayPath(player, Particle.HAPPY_VILLAGER);
+                path.displayPath(player, displayParticle);
                 pathRecorder.trackPaths(player);
             }
 

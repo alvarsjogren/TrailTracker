@@ -8,7 +8,7 @@ import se.alvarsjogren.trailTracker.utilities.StorageManager;
 
 
 public final class TrailTracker extends JavaPlugin {
-    public PathRecorder pathRecorder = new PathRecorder();
+    public PathRecorder pathRecorder = new PathRecorder(this);
     private StorageManager storageManager;
 
     @Override
