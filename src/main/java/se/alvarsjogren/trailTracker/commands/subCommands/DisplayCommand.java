@@ -9,26 +9,12 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import se.alvarsjogren.trailTracker.PathRecorder;
 import se.alvarsjogren.trailTracker.TrailTracker;
+import se.alvarsjogren.trailTracker.utilities.UITextComponents;
 
 import java.util.Arrays;
 
 public class DisplayCommand implements SubCommand{
     private final PathRecorder pathRecorder;
-
-    private final TextComponent ttPrefix = Component
-            .text("[")
-            .color(TextColor.color(0xE78B48))
-            .append(Component
-                    .text("T")
-                    .color(TextColor.color(0x102E50))
-                    .decoration(TextDecoration.BOLD, true))
-            .append(Component
-                    .text("T")
-                    .color(TextColor.color(0xBE3D2A))
-                    .decoration(TextDecoration.BOLD, true))
-            .append(Component
-                    .text("] ")
-                    .color(TextColor.color(0xE78B48)));
 
     public DisplayCommand(TrailTracker plugin) {
         this.pathRecorder = plugin.pathRecorder;
@@ -66,9 +52,9 @@ public class DisplayCommand implements SubCommand{
                                             .text(pathName)
                                             .color(TextColor.color(0xE78B48))
                                             .decoration(TextDecoration.BOLD, true));
-                            player.sendMessage(ttPrefix.append(text));
+                            player.sendMessage(UITextComponents.TTPrefix().append(text));
 
-                        } else player.sendMessage(errorMessage(result.message));
+                        } else player.sendMessage(UITextComponents.errorMessage(result.message));
 
                     } else if (args[1].equals("off")) {
                         PathRecorder.Result result = pathRecorder.stopDisplayingPath(player.getUniqueId(), pathName);
@@ -80,16 +66,12 @@ public class DisplayCommand implements SubCommand{
                                             .text(pathName)
                                             .color(TextColor.color(0xE78B48))
                                             .decoration(TextDecoration.BOLD, true));
-                            player.sendMessage(ttPrefix.append(text));
+                            player.sendMessage(UITextComponents.TTPrefix().append(text));
 
-                        } else player.sendMessage(errorMessage(result.message));
+                        } else player.sendMessage(UITextComponents.errorMessage(result.message));
                     }
-                } else player.sendMessage(errorMessage("Wrong usage. Use /tt help for usage."));
-            } else player.sendMessage(errorMessage("You are not allowed to use that command."));
-        } else sender.sendMessage(errorMessage("Only a player can use this command."));
-    }
-
-    private TextComponent errorMessage(String message) {
-        return ttPrefix.append(Component.text(message).color(TextColor.color(0xBE3D2A)));
+                } else player.sendMessage(UITextComponents.errorMessage("Wrong usage. Use /tt help for usage."));
+            } else player.sendMessage(UITextComponents.errorMessage("You are not allowed to use that command."));
+        } else sender.sendMessage(UITextComponents.errorMessage("Only a player can use this command."));
     }
 }
