@@ -1,12 +1,16 @@
 # Plugin metadata for TrailTracker
 name: TrailTracker
-version: '1.0-SNAPSHOT'
+version: '1.0.0'
 main: se.alvarsjogren.trailTracker.TrailTracker
 api-version: '1.21'
 prefix: TrailTracker
 authors: [ Alvar Sjögren ]
 description: A plugin for creating, tracking, and visualizing player movement paths in the Minecraft world.
 website: alvarsjogren.se
+
+# Version compatibility information
+softdepend: []  # No required dependencies
+loadbefore: []  # No plugins that should load after this one
 
 # Plugin commands
 commands:

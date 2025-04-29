@@ -3,6 +3,7 @@ package se.alvarsjogren.trailTracker;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.entity.Player;
+import se.alvarsjogren.trailTracker.utilities.ParticleManager;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -42,6 +43,9 @@ public class Path {
 
     /** Ordered list of locations that make up the path */
     private final ArrayList<Location> trackedPath = new ArrayList<>();
+
+    /** Reference to the plugin's particle manager */
+    private transient ParticleManager particleManager;
 
     /**
      * Creates a new path with the specified name and detection radius.
@@ -181,6 +185,16 @@ public class Path {
     }
 
     /**
+     * Sets the particle manager for this path.
+     * This is called after path deserialization to inject the manager.
+     *
+     * @param particleManager The particle manager to use
+     */
+    public void setParticleManager(ParticleManager particleManager) {
+        this.particleManager = particleManager;
+    }
+
+    /**
      * Adds a new location to the path, with checks for max points limit.
      * Will only skip identical locations (completely still player).
      *
@@ -216,11 +230,14 @@ public class Path {
     /**
      * Displays the path to a player using particles.
      * Spawns a single particle at each location along the path.
+     * Maintains the original behavior of the plugin with particles at block centers.
      *
      * @param player The player to display the path to
      * @param displayParticle The particle type to use
      */
     public void displayPath(Player player, Particle displayParticle) {
+        // Use the original implementation to maintain core mechanics
+        // Each particle appears exactly at the stored location (center of blocks)
         for (Location location : trackedPath) {
             player.spawnParticle(
                     displayParticle,

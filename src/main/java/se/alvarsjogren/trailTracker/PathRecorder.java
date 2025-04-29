@@ -4,6 +4,8 @@ import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
+import se.alvarsjogren.trailTracker.utilities.ParticleManager;
+import se.alvarsjogren.trailTracker.utilities.VersionCompatibility;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -55,6 +57,9 @@ public class PathRecorder {
     /** Default radius around path points where players are detected */
     private int defaultPathRadius;
 
+    /** Manager for handling particles across different versions */
+    private final ParticleManager particleManager;
+
     /**
      * Creates a new PathRecorder with the specified plugin instance.
      * Loads configuration values and starts the display task.
@@ -63,6 +68,7 @@ public class PathRecorder {
      */
     public PathRecorder(TrailTracker plugin) {
         this.plugin = plugin;
+        this.particleManager = new ParticleManager(plugin);
         loadConfigValues();
     }
 
@@ -74,7 +80,7 @@ public class PathRecorder {
         try {
             // Load particle type from config or use default
             String particleName = plugin.getConfig().getString("default-display-particle", "HAPPY_VILLAGER");
-            displayParticle = Particle.valueOf(particleName);
+            displayParticle = particleManager.getParticleFromConfig(particleName);
         } catch (IllegalArgumentException e) {
             plugin.getLogger().warning("Invalid default-display-particle in config. Using HAPPY_VILLAGER.");
             displayParticle = Particle.HAPPY_VILLAGER;
@@ -148,13 +154,18 @@ public class PathRecorder {
     /**
      * Sets the paths map with values loaded from storage.
      * Clears the existing paths and adds all the loaded ones.
+     * Also injects the ParticleManager into each path for version compatibility.
      *
      * @param loadedPaths The paths to set
      */
     public synchronized void setPaths(Map<String, Path> loadedPaths) {
         paths.clear();
         if (loadedPaths != null) {
-            paths.putAll(loadedPaths);
+            // Add all paths and inject ParticleManager
+            loadedPaths.values().forEach(path -> {
+                path.setParticleManager(particleManager);
+                paths.put(path.getName(), path);
+            });
         }
     }
 
@@ -226,6 +237,7 @@ public class PathRecorder {
         path.setCreatedBy(playerName);
         path.setCreationDate(new Date());
         path.setMaxPoints(maxPathPoints);
+        path.setParticleManager(particleManager);
 
         // Add to tracking maps
         trackedPaths.put(playerUUID, pathName);
@@ -287,9 +299,13 @@ public class PathRecorder {
         // Add a small vertical offset to avoid ground-level issues
         Location checkLocation = player.getLocation().clone().add(0, 0.3, 0);
 
+        // Always use toCenterLocation for consistent block centering
+        // This ensures particles are always at the center of blocks as in the original design
+        checkLocation = checkLocation.toCenterLocation();
+
         // Thread-safe check and add
         synchronized (path) {
-            path.putLocationToPath(checkLocation.toCenterLocation());
+            path.putLocationToPath(checkLocation);
         }
     }
 
@@ -389,6 +405,7 @@ public class PathRecorder {
     /**
      * Displays all paths that a player has selected to view.
      * Called periodically by the display task and by events.
+     * Uses version-compatible particle display methods.
      *
      * @param player The player to display paths for
      */
@@ -412,5 +429,15 @@ public class PathRecorder {
                 playerPaths.remove(pathName);
             }
         }
+    }
+
+    /**
+     * Gets the particle manager for this path recorder.
+     * Used by paths to access the particle manager.
+     *
+     * @return The particle manager instance
+     */
+    public ParticleManager getParticleManager() {
+        return particleManager;
     }
 }

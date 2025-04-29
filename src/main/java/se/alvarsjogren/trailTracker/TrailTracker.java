@@ -8,23 +8,12 @@ import se.alvarsjogren.trailTracker.commands.TTCommandExecutor;
 import se.alvarsjogren.trailTracker.commands.TTTabCompleter;
 import se.alvarsjogren.trailTracker.listeners.PlayerWalking;
 import se.alvarsjogren.trailTracker.utilities.StorageManager;
+import se.alvarsjogren.trailTracker.utilities.VersionCompatibility;
 
 
 /**
  * Main plugin class for TrailTracker.
  * Handles plugin initialization, shutdown, and provides access to core components.
- *
- * TrailTracker is a Minecraft plugin that allows players to:
- * - Record their movement paths in the world
- * - Save and load these paths
- * - Visualize paths using particles
- * - Share paths with other players
- *
- * This class coordinates the major components:
- * - PathRecorder for managing path creation/tracking
- * - StorageManager for persistent data storage
- * - Command handlers for user interaction
- * - Event listeners for tracking player movement
  */
 public final class TrailTracker extends JavaPlugin {
     /** Core component that manages path recording and display */
@@ -44,6 +33,17 @@ public final class TrailTracker extends JavaPlugin {
     public void onEnable() {
         // Plugin startup logic
         getLogger().info("Starting up...");
+
+        // Log the detected server version
+        getLogger().info("Detected Minecraft version: " + VersionCompatibility.getVersionString());
+
+        // Check if the server version is compatible - we support 1.19+
+        if (!isServerVersionCompatible()) {
+            getLogger().warning("Running on an older version: " + VersionCompatibility.getVersionString());
+            getLogger().warning("TrailTracker is optimized for 1.19 or newer.");
+            getLogger().warning("The plugin should still work, but please report any issues.");
+            // We'll continue loading the plugin and just warn instead of throwing an error
+        }
 
         // Save default config if it doesn't exist
         saveDefaultConfig();
@@ -70,6 +70,17 @@ public final class TrailTracker extends JavaPlugin {
         setupMetrics();
 
         getLogger().info("Started successfully!");
+    }
+
+    /**
+     * Checks if the server version is supported by this plugin.
+     * We support Minecraft 1.19 and newer, with best support for 1.21+
+     *
+     * @return true if the server version is compatible, false otherwise
+     */
+    private boolean isServerVersionCompatible() {
+        // Support Minecraft 1.19+
+        return VersionCompatibility.getMajorVersion() >= 19;
     }
 
     /**
@@ -106,6 +117,9 @@ public final class TrailTracker extends JavaPlugin {
         metrics.addCustomChart(new SingleLineChart("active_recorders", () ->
                 pathRecorder.getTrackedPaths().size()
         ));
+
+        // Add server version info to metrics
+        metrics.addCustomChart(new SimplePie("minecraft_version", VersionCompatibility::getVersionString));
 
         getLogger().info("bStats metrics initialized (Plugin ID: 25685)");
     }

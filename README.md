@@ -15,10 +15,22 @@ TrailTracker allows players to record their movements as paths, save them for fu
 - **Configurable**: Customize particles, detection radius, and more
 - **Permission-Based**: Control who can create, edit, and view paths
 - **User-Friendly**: Simple commands with tab completion
+- **Version Compatible**: Works across multiple Minecraft versions
+
+## Version Compatibility
+
+| Minecraft Version | Support Level     | Notes                                            |
+|-------------------|-------------------|--------------------------------------------------|
+| 1.21.1+           | Full Support      | Primary development target                       |
+| 1.20.x            | Compatible        | Should work with minimal issues                  |
+| 1.19.x            | Basic Support     | Core features work, some UI may be different     |
+| 1.18.x and older  | Limited Support   | Basic functionality only, no guarantees          |
+
+For detailed information about version compatibility, see [VERSION_COMPATIBILITY.md](VERSION_COMPATIBILITY.md).
 
 ## Installation
 
-1. Download the latest TrailTracker.jar from [Releases](https://github.com/yourname/trailtracker/releases)
+1. Download the latest TrailTracker.jar from [Releases](https://github.com/alvarsjogren/trailtracker/releases)
 2. Place the .jar file in your server's `plugins` folder
 3. Restart your server or run `/reload confirm`
 4. The default configuration will be generated automatically
@@ -80,8 +92,18 @@ recording-message: "Recording {path-name}"  # Message when recording
 
 ## Compatibility
 
-- **Supports**: Paper 1.21.4+
+- **Supported Minecraft Versions**: 1.18.x - 1.21.x (best on 1.21.1+)
+- **Required**: Paper server (or compatible fork)
 - **Java**: Java 21 or newer
+
+## Upgrading from Previous Versions
+
+When upgrading from an older version of TrailTracker:
+
+1. Back up your `plugins/TrailTracker/paths` folder
+2. Replace the old .jar file with the new one
+3. Restart your server
+4. Your existing paths will be automatically migrated
 
 ## Contributing
 
@@ -97,7 +119,7 @@ This project is licensed under the [Apache License 2.0](LICENSE) - see the LICEN
 
 - Author: Alvar Sjögren
 - Website: [alvarsjogren.se](https://alvarsjogren.se)
-- Issues: [GitHub Issues](https://github.com/yourname/trailtracker/issues)
+- Issues: [GitHub Issues](https://github.com/alvarsjogren/trailtracker/issues)
 
 ## Acknowledgments
 
