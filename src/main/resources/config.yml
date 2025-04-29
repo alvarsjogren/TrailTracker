@@ -1,4 +1,10 @@
-### Storage configs ###
-path-folder: "paths" # Default
+### Storage settings ###
+path-folder: "paths"
 
-path-radius: 3
+### Display settings ###
+default-display-particle: "HAPPY_VILLAGER"
+
+# Default action bar text when traveling paths
+travel-message: "Traveling {path-name}"
+# Default action bar text when recording paths
+recording-message: "Recording {path-name}"
