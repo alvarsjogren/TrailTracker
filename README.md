@@ -2,8 +2,6 @@
 
 A Minecraft Paper plugin for creating, tracking, and visualizing player movement paths in the Minecraft world.
 
-![TrailTracker Banner](https://via.placeholder.com/800x200?text=TrailTracker)
-
 ## Description
 
 TrailTracker allows players to record their movements as paths, save them for future use, and display them to other players using particles. Perfect for creating guided tours, marking important routes, highlighting player-created trails, and enhancing navigation on your server.
