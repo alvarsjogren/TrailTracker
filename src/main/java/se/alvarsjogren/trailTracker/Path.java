@@ -9,7 +9,7 @@ import java.util.ArrayList;
 public class Path {
     private int version;
     private final String name;
-    private String description = "";
+    private String description = "No description for this path yet";
     private int radius;
     private final ArrayList<Location> trackedPath = new ArrayList<>();
 
