@@ -51,7 +51,7 @@ public class ListCommand implements SubCommand{
 
         for (Path path : pathRecorder.getPaths().values()) {
             final TextComponent item = Component
-                    .text(path.getName())// + " - " + path.getDescription())
+                    .text(path.getName() + " - " + path.getDescription())
                     .color(TextColor.color(0xF5C45E));
             sender.sendMessage(item);
         }
