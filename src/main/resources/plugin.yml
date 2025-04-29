@@ -1,3 +1,4 @@
+# Plugin metadata for TrailTracker
 name: TrailTracker
 version: '1.0-SNAPSHOT'
 main: se.alvarsjogren.trailTracker.TrailTracker
@@ -6,11 +7,15 @@ prefix: TrailTracker
 authors: [ Alvar Sjögren ]
 description: A plugin for creating, tracking, and visualizing player movement paths in the Minecraft world.
 website: alvarsjogren.se
+
+# Plugin commands
 commands:
   tt:
     description: Main command for TrailTracker
     usage: /tt <subcommand>
     aliases: [trailtracker]
+
+# Plugin permissions
 permissions:
   TrailTracker.startstop:
     description: Allows player to do /tt start <path>, /tt stop, /tt remove <path>, and /tt describe <path>

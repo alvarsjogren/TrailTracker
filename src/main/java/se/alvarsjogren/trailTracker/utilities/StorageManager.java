@@ -12,17 +12,38 @@ import java.util.Map;
 /**
  * Manages the storage and retrieval of path data.
  * Handles serialization and deserialization of path objects to/from JSON files.
+ *
+ * The StorageManager is responsible for:
+ * - Saving paths to JSON files on disk
+ * - Loading paths from JSON files on startup
+ * - Handling file operations safely with proper error checking
+ * - Managing the storage directory structure
+ *
+ * Uses Google's Gson library for JSON serialization with custom type adapters
+ * for Bukkit-specific classes like Location.
  */
 public class StorageManager {
+    /**
+     * Reference to the main plugin instance
+     */
     private final TrailTracker plugin;
+
+    /**
+     * Gson instance configured with pretty printing and custom type adapters
+     */
     private final Gson gson = new GsonBuilder()
             .setPrettyPrinting()
             .registerTypeAdapter(Location.class, new LocationAdapter())
             .create();
+
+    /**
+     * Directory where path files are stored
+     */
     private final File pathsFolder;
 
     /**
      * Creates a new StorageManager.
+     * Sets up the storage directory based on configuration.
      *
      * @param plugin The TrailTracker plugin instance
      */
@@ -38,6 +59,7 @@ public class StorageManager {
             folderPath = "paths"; // Fallback to default if config is invalid
         }
 
+        // Create File object for the paths folder
         this.pathsFolder = new File(plugin.getDataFolder(), folderPath);
 
         // Create the folder if it doesn't exist
@@ -52,12 +74,14 @@ public class StorageManager {
 
     /**
      * Saves all current paths to disk.
+     * Also handles removal of paths that no longer exist by moving them to a backup folder.
      */
     public void save() {
+        // Get a copy of the current paths from the PathRecorder
         HashMap<String, Path> currentPaths = (HashMap<String, Path>) plugin.pathRecorder.getPaths();
         HashMap<String, File> existingFiles = new HashMap<>();
 
-        // Map existing path files
+        // Map existing path files to identify old paths that need to be moved
         File[] files = pathsFolder.listFiles((dir, name) -> name.endsWith(".json"));
         if (files != null) {
             for (File file : files) {
@@ -92,11 +116,13 @@ public class StorageManager {
 
     /**
      * Saves a single path to disk.
+     * Serializes the path to JSON and writes it to a file.
      *
      * @param path The path to save
      * @throws RuntimeException If saving fails
      */
     private void savePath(Path path) {
+        // Sanitize file name to prevent invalid characters
         String safeFileName = sanitizeFileName(path.getName());
         File pathFile = new File(pathsFolder, safeFileName + ".json");
 
@@ -113,6 +139,7 @@ public class StorageManager {
 
     /**
      * Moves old path files to a backup folder.
+     * Creates a "deleted" subfolder and moves obsolete path files there.
      *
      * @param leftoverFiles Map of files to move
      */
@@ -146,13 +173,16 @@ public class StorageManager {
 
     /**
      * Loads all paths from disk.
+     * Deserializes JSON files into Path objects and adds them to the PathRecorder.
      */
     public void load() {
+        // Check if the paths folder exists
         if (!pathsFolder.exists()) {
             plugin.getLogger().warning("Path folder does not exist: " + pathsFolder.getAbsolutePath());
             return; // No folder = nothing to load
         }
 
+        // List all JSON files in the paths folder
         File[] files = pathsFolder.listFiles((dir, name) -> name.endsWith(".json"));
         if (files == null) {
             plugin.getLogger().warning("Failed to list files in path folder: " + pathsFolder.getAbsolutePath());
@@ -163,10 +193,13 @@ public class StorageManager {
         int successCount = 0;
         int errorCount = 0;
 
+        // Process each JSON file
         for (File file : files) {
             try (Reader reader = new FileReader(file)) {
+                // Parse the JSON first to check version
                 JsonObject json = JsonParser.parseReader(reader).getAsJsonObject();
 
+                // Check version for backwards compatibility
                 int fileVersion = json.has("version") ? json.get("version").getAsInt() : 1; // Default to version 1
 
                 if (fileVersion > 1) {
@@ -193,6 +226,7 @@ public class StorageManager {
             }
         }
 
+        // Report results
         if (loadedPaths.isEmpty()) {
             plugin.getLogger().info("No valid paths loaded.");
         } else {
@@ -203,6 +237,7 @@ public class StorageManager {
 
     /**
      * Sanitizes a filename to ensure it's safe for file system operations.
+     * Replaces invalid characters with underscores.
      *
      * @param input The input string
      * @return A sanitized filename

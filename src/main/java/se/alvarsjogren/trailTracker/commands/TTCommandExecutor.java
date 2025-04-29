@@ -16,13 +16,19 @@ import java.util.List;
 /**
  * Main command executor for the TrailTracker plugin.
  * Handles the routing of commands to the appropriate subcommand handlers.
+ *
+ * This class follows the Command pattern combined with a Chain of Responsibility pattern,
+ * where multiple handlers (subcommands) are tried in sequence until one accepts
+ * responsibility for handling the command.
  */
 public class TTCommandExecutor implements CommandExecutor {
 
+    /** List of all registered subcommands */
     private final List<SubCommand> subCommands = new ArrayList<>();
 
     /**
      * Creates a new TTCommandExecutor.
+     * Initializes and registers all available subcommands.
      *
      * @param plugin The TrailTracker plugin instance
      */
@@ -39,8 +45,19 @@ public class TTCommandExecutor implements CommandExecutor {
         subCommands.add(new InfoCommand(plugin));
     }
 
+    /**
+     * Handles all commands for the plugin.
+     * Routes commands to the appropriate subcommand handler based on the first argument.
+     *
+     * @param sender The sender of the command
+     * @param command The command being executed
+     * @param label The alias used for the command
+     * @param args The command arguments
+     * @return true if the command was handled, false otherwise
+     */
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
+        // Show default message if no arguments provided
         if (args.length == 0) {
             final TextComponent text = Component
                     .text("[tt] ")
@@ -53,7 +70,7 @@ public class TTCommandExecutor implements CommandExecutor {
             return true;
         }
 
-        // Try to find matching subcommand
+        // Try to find matching subcommand by comparing first argument with command names
         for (SubCommand subCommand : subCommands) {
             if (args[0].equalsIgnoreCase(subCommand.getName())) {
                 subCommand.perform(sender, args);
@@ -61,7 +78,7 @@ public class TTCommandExecutor implements CommandExecutor {
             }
         }
 
-        // No matching subcommand found
+        // No matching subcommand found, show error message
         final TextComponent text = Component
                 .text("[tt] ")
                 .color(TextColor.color(0x102E50))
@@ -74,6 +91,7 @@ public class TTCommandExecutor implements CommandExecutor {
 
     /**
      * Gets the list of registered subcommands.
+     * Used by the tab completer and help command.
      *
      * @return The list of subcommands
      */

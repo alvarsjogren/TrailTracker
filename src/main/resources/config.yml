@@ -1,22 +1,40 @@
+# TrailTracker Configuration
+#
+# This configuration file controls the behavior of the TrailTracker plugin.
+# Settings are grouped by category for easier navigation.
+
 ### Storage settings ###
 # Folder where path files are stored
+# This is relative to the plugin's data folder
 path-folder: "paths"
+
 # Maximum number of locations to store per path (0 = unlimited)
+# Set a limit to prevent extremely large paths from causing performance issues
 max-path-points: 0
+
 # Maximum allowed path name length
+# Prevents excessively long path names
 max-path-name-length: 32
 
 ### Display settings ###
 # Particle to use for displaying paths
 # Available options: https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/Particle.html
+# Common choices: HAPPY_VILLAGER, VILLAGER_HAPPY, COMPOSTER, HEART, END_ROD
 default-display-particle: "HAPPY_VILLAGER"
+
 # Default radius around path points where players are considered "on path"
+# Larger values make paths easier to follow but less precise
 default-path-radius: 3
+
 # How frequently to display particles (in ticks, 20 ticks = 1 second)
+# Lower values show more particles but may impact performance
 particle-frequency: 5
 
 ### Messages ###
 # Action bar text when traveling paths. {path-name} will be replaced with the path name
+# This appears above the hotbar when a player is walking on or near a path
 travel-message: "Traveling {path-name}"
+
 # Action bar text when recording paths. {path-name} will be replaced with the path name
+# This appears above the hotbar when a player is actively recording a path
 recording-message: "Recording {path-name}"

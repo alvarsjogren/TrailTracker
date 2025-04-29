@@ -10,15 +10,37 @@ import java.util.Date;
 /**
  * Represents a recorded path in the world.
  * A path consists of a series of locations that can be displayed with particles.
+ *
+ * The Path class stores all the information about a path, including:
+ * - The list of locations that make up the path
+ * - Metadata such as name, description, and creator
+ * - Configuration for how the path should be displayed
+ *
+ * Paths are serialized to/from JSON for persistent storage.
  */
 public class Path {
+    /** Current version of the path data format, used for backward compatibility */
     private int version;
+
+    /** Unique name identifier for this path */
     private final String name;
+
+    /** User-friendly description of the path */
     private String description = "No description for this path yet";
+
+    /** Detection radius around path points (in blocks) */
     private int radius;
+
+    /** When this path was first created */
     private Date creationDate = new Date();
+
+    /** Username of player who created the path */
     private String createdBy = "Unknown";
+
+    /** Maximum number of points allowed (0 = unlimited) */
     private int maxPoints = 0; // 0 means unlimited
+
+    /** Ordered list of locations that make up the path */
     private final ArrayList<Location> trackedPath = new ArrayList<>();
 
     /**
@@ -193,6 +215,7 @@ public class Path {
 
     /**
      * Displays the path to a player using particles.
+     * Spawns a single particle at each location along the path.
      *
      * @param player The player to display the path to
      * @param displayParticle The particle type to use

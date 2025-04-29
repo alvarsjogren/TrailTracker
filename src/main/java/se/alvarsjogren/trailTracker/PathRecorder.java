@@ -11,23 +11,53 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Records and manages player movement paths in the Minecraft world.
  * Thread-safe implementation for handling concurrent access in a multi-threaded server environment.
+ *
+ * The PathRecorder acts as the central coordinator for:
+ * - Creating, updating, and removing paths
+ * - Tracking player movement to record paths
+ * - Managing which paths are being displayed to which players
+ * - Handling all path-related operations with proper thread safety
+ *
+ * It uses ConcurrentHashMap and synchronized collections to ensure thread safety
+ * in the multi-threaded Bukkit server environment.
  */
 public class PathRecorder {
+    /** Master collection of all paths by name */
     private final Map<String, Path> paths = new ConcurrentHashMap<>();
+
+    /** Maps player UUIDs to the path names they are currently tracking */
     private final Map<UUID, String> trackedPaths = new ConcurrentHashMap<>();
+
+    /** Maps player UUIDs to the set of path names they are displaying */
     private final Map<UUID, Set<String>> displayedPaths = new ConcurrentHashMap<>();
+
+    /** Tracks the last time each player's position was recorded to prevent excessive updates */
     private final Map<UUID, Long> lastTrackedTime = new ConcurrentHashMap<>();
 
+    /** Reference to the main plugin instance */
     private final TrailTracker plugin;
+
+    /** The particle type used for displaying paths */
     private Particle displayParticle;
+
+    /** Maximum allowed length for path names */
     private int maxPathNameLength;
+
+    /** Maximum number of points allowed in a path (0 = unlimited) */
     private int maxPathPoints;
+
+    /** Reference to the scheduled task that displays particles */
     private BukkitTask displayTask;
+
+    /** How often to display particles (in ticks) */
     private int particleFrequency;
+
+    /** Default radius around path points where players are detected */
     private int defaultPathRadius;
 
     /**
      * Creates a new PathRecorder with the specified plugin instance.
+     * Loads configuration values and starts the display task.
      *
      * @param plugin The TrailTracker plugin instance
      */
@@ -38,9 +68,11 @@ public class PathRecorder {
 
     /**
      * Loads configuration values from the plugin configuration.
+     * Called during initialization and when the plugin is reloaded.
      */
     public void loadConfigValues() {
         try {
+            // Load particle type from config or use default
             String particleName = plugin.getConfig().getString("default-display-particle", "HAPPY_VILLAGER");
             displayParticle = Particle.valueOf(particleName);
         } catch (IllegalArgumentException e) {
@@ -48,6 +80,7 @@ public class PathRecorder {
             displayParticle = Particle.HAPPY_VILLAGER;
         }
 
+        // Load other configuration values
         maxPathNameLength = plugin.getConfig().getInt("max-path-name-length", 32);
         maxPathPoints = plugin.getConfig().getInt("max-path-points", 0); // 0 means unlimited
         particleFrequency = plugin.getConfig().getInt("particle-frequency", 5);
@@ -59,6 +92,7 @@ public class PathRecorder {
 
     /**
      * Starts the task that displays paths to players at the configured frequency.
+     * Cancels any existing task first to prevent duplicates.
      */
     private void startDisplayTask() {
         // Cancel existing task if it exists
@@ -66,7 +100,7 @@ public class PathRecorder {
             displayTask.cancel();
         }
 
-        // Start new task
+        // Start new task to display paths for all online players
         displayTask = plugin.getServer().getScheduler().runTaskTimer(
                 plugin,
                 () -> {
@@ -81,11 +115,21 @@ public class PathRecorder {
 
     /**
      * Result class for returning operation status and messages.
+     * Used to provide consistent feedback from operations to commands.
      */
     public static class Result {
+        /** Whether the operation was successful */
         public final boolean flag;
+
+        /** Message describing the result of the operation */
         public final String message;
 
+        /**
+         * Creates a new Result with the specified status and message.
+         *
+         * @param flag True if the operation succeeded, false otherwise
+         * @param message Description of the result
+         */
         public Result(boolean flag, String message) {
             this.flag = flag;
             this.message = message;
@@ -103,6 +147,8 @@ public class PathRecorder {
 
     /**
      * Sets the paths map with values loaded from storage.
+     * Clears the existing paths and adds all the loaded ones.
+     *
      * @param loadedPaths The paths to set
      */
     public synchronized void setPaths(Map<String, Path> loadedPaths) {
@@ -122,6 +168,8 @@ public class PathRecorder {
 
     /**
      * Gets a copy of the displayed paths map.
+     * Creates a deep copy to prevent concurrent modification issues.
+     *
      * @return A copy of the displayed paths map
      */
     public Map<UUID, Set<String>> getDisplayedPaths() {
@@ -135,6 +183,7 @@ public class PathRecorder {
 
     /**
      * Checks if a player is currently tracking a path.
+     *
      * @param playerUUID The UUID of the player to check
      * @return True if the player is tracking a path, false otherwise
      */
@@ -144,16 +193,20 @@ public class PathRecorder {
 
     /**
      * Starts tracking a new path for a player.
+     * Creates a new path with the specified name and adds the player as its tracker.
+     *
      * @param playerUUID The UUID of the player
      * @param playerName The name of the player (for attribution)
      * @param pathName The name of the path to track
      * @return Result of the operation
      */
     public synchronized Result startTrackingPath(UUID playerUUID, String playerName, String pathName) {
+        // Check if player is already tracking a path
         if (trackedPaths.containsKey(playerUUID)) {
             return new Result(false, "You are already tracking a path.");
         }
 
+        // Check if path name is already in use
         if (paths.containsKey(pathName)) {
             return new Result(false, "A path with that name already exists.");
         }
@@ -174,6 +227,7 @@ public class PathRecorder {
         path.setCreationDate(new Date());
         path.setMaxPoints(maxPathPoints);
 
+        // Add to tracking maps
         trackedPaths.put(playerUUID, pathName);
         paths.put(pathName, path);
         lastTrackedTime.put(playerUUID, System.currentTimeMillis());
@@ -183,6 +237,8 @@ public class PathRecorder {
 
     /**
      * Stops tracking a path for a player.
+     * Removes the player from the tracking map but keeps the path.
+     *
      * @param playerUUID The UUID of the player
      * @return Result of the operation
      */
@@ -200,6 +256,8 @@ public class PathRecorder {
     /**
      * Tracks the player's movement and adds it to their current path.
      * Records all movement, only skipping when player is completely still.
+     * Uses a small throttle to prevent excessive updates for performance.
+     *
      * @param player The player to track
      */
     public void trackPaths(Player player) {
@@ -226,6 +284,7 @@ public class PathRecorder {
 
         lastTrackedTime.put(playerUUID, now);
 
+        // Add a small vertical offset to avoid ground-level issues
         Location checkLocation = player.getLocation().clone().add(0, 0.3, 0);
 
         // Thread-safe check and add
@@ -236,13 +295,18 @@ public class PathRecorder {
 
     /**
      * Removes a path from the system.
+     * Also removes the path from all players' displayed paths.
+     *
      * @param pathName The name of the path to remove
      * @return Result of the operation
      */
     public synchronized Result removePath(String pathName) {
+        // Check if path exists
         if (!paths.containsKey(pathName)) {
             return new Result(false, "There is no path with that name. Use /tt list to see all paths.");
         }
+
+        // Check if path is being tracked
         if (trackedPaths.containsValue(pathName)) {
             return new Result(false, "The path is being tracked. Stop tracking before deleting path.");
         }
@@ -257,17 +321,21 @@ public class PathRecorder {
             }
         }
 
+        // Remove path from main map
         paths.remove(pathName);
         return new Result(true, "Success");
     }
 
     /**
      * Starts displaying a path for a player.
+     * Adds the path to the player's set of displayed paths.
+     *
      * @param playerUUID The UUID of the player
      * @param pathName The name of the path to display
      * @return Result of the operation
      */
     public synchronized Result startDisplayingPath(UUID playerUUID, String pathName) {
+        // Check if path exists
         if (!paths.containsKey(pathName)) {
             return new Result(false, "There is no path with that name.");
         }
@@ -276,16 +344,20 @@ public class PathRecorder {
         Set<String> playerPaths = displayedPaths.computeIfAbsent(playerUUID, k ->
                 Collections.synchronizedSet(new HashSet<>()));
 
+        // Check if already displaying
         if (playerPaths.contains(pathName)) {
             return new Result(false, "You are already displaying that path.");
         }
 
+        // Add to displayed paths
         playerPaths.add(pathName);
         return new Result(true, "Success");
     }
 
     /**
      * Stops displaying a path for a player.
+     * Removes the path from the player's set of displayed paths.
+     *
      * @param playerUUID The UUID of the player
      * @param pathName The name of the path to stop displaying
      * @return Result of the operation
@@ -293,14 +365,17 @@ public class PathRecorder {
     public synchronized Result stopDisplayingPath(UUID playerUUID, String pathName) {
         Set<String> playerPaths = displayedPaths.get(playerUUID);
 
+        // Check if player is displaying any paths
         if (playerPaths == null) {
             return new Result(false, "You are not displaying any paths.");
         }
 
+        // Check if player is displaying this specific path
         if (!playerPaths.contains(pathName)) {
             return new Result(false, "You are not displaying any path with that name.");
         }
 
+        // Remove from displayed paths
         playerPaths.remove(pathName);
 
         // Clean up if player is not displaying any paths anymore
@@ -313,19 +388,24 @@ public class PathRecorder {
 
     /**
      * Displays all paths that a player has selected to view.
+     * Called periodically by the display task and by events.
+     *
      * @param player The player to display paths for
      */
     public void displayPaths(Player player) {
         UUID playerUUID = player.getUniqueId();
         Set<String> playerPaths = displayedPaths.get(playerUUID);
 
+        // Check if player is displaying any paths
         if (playerPaths == null || playerPaths.isEmpty()) {
             return;
         }
 
-        for (String pathName : new HashSet<>(playerPaths)) { // Copy to avoid concurrent modification
+        // Copy to avoid concurrent modification while iterating
+        for (String pathName : new HashSet<>(playerPaths)) {
             Path path = paths.get(pathName);
             if (path != null) {
+                // Display the path to the player
                 path.displayPath(player, displayParticle);
             } else {
                 // Path has been removed but is still in player's display list

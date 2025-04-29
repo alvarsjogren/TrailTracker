@@ -8,9 +8,19 @@ import org.bukkit.command.CommandSender;
 
 import java.util.List;
 
+/**
+ * Command that shows help information for all available commands.
+ * Displays a formatted list of all registered subcommands with descriptions.
+ */
 public class HelpCommand implements SubCommand{
+    /** List of all registered subcommands to display help for */
     private final List<SubCommand> subCommands;
 
+    /**
+     * Creates a new HelpCommand.
+     *
+     * @param subCommands The list of all registered subcommands
+     */
     public HelpCommand(List<SubCommand> subCommands) {
         this.subCommands = subCommands;
     }
@@ -30,9 +40,17 @@ public class HelpCommand implements SubCommand{
         return "/tt help";
     }
 
+    /**
+     * Displays a formatted list of all available commands with descriptions.
+     * Uses Adventure API for rich text formatting.
+     *
+     * @param sender The command sender (player or console)
+     * @param args The command arguments
+     */
     @Override
     public void perform(CommandSender sender, String[] args) {
         sender.sendMessage("\n");
+        // Create styled header with plugin colors
         final TextComponent header = Component
                 .text("=== ")
                 .color(TextColor.color(0xE78B48))
@@ -45,6 +63,7 @@ public class HelpCommand implements SubCommand{
                         .color(TextColor.color(0xE78B48)));
         sender.sendMessage(header);
 
+        // List all commands with their syntax and description
         for (SubCommand subCommand : subCommands) {
             final TextComponent item = Component
                     .text(subCommand.getSyntax() + " - " + subCommand.getDescription())
@@ -52,6 +71,7 @@ public class HelpCommand implements SubCommand{
             sender.sendMessage(item);
         }
 
+        // Create styled footer
         final TextComponent footer = Component
                 .text("==========================")
                 .color(TextColor.color(0xE78B48));

@@ -17,29 +17,54 @@ import se.alvarsjogren.trailTracker.TrailTracker;
 import java.util.Collection;
 import java.util.Objects;
 
+/**
+ * Listens for player movement events to handle path tracking and display.
+ *
+ * This class is responsible for:
+ * - Detecting when players move
+ * - Recording movement for players who are tracking paths
+ * - Notifying players when they are on or near a path
+ * - Displaying path particles
+ */
 public class PlayerWalking implements Listener {
+    /** Reference to the PathRecorder for tracking and displaying paths */
     private final PathRecorder pathRecorder;
 
+    /** Particle type to use for displaying paths */
     private Particle displayParticle;
+
+    /** Message template for when a player is traveling on a path */
     private String travelingMessage;
+
+    /** Message template for when a player is recording a path */
     private String recordMessage;
 
-
+    /**
+     * Creates a new PlayerWalking listener.
+     * Loads configuration values for particles and messages.
+     *
+     * @param plugin The TrailTracker plugin instance
+     */
     public PlayerWalking(TrailTracker plugin) {
         this.pathRecorder = plugin.pathRecorder;
 
+        // Load display particle from config
         try {
             displayParticle = Particle.valueOf(plugin.getConfig().getString("default-display-particle"));
         } catch (IllegalArgumentException e) {
             plugin.getLogger().warning("Cant load default display particle. Will use plugin default");
             displayParticle= Particle.HAPPY_VILLAGER;
         }
+
+        // Load traveling message from config
         try {
             travelingMessage = Objects.requireNonNull(plugin.getConfig().getString("travel-message")).replace("{path-name}", "");
         } catch (NullPointerException e) {
             plugin.getLogger().warning("Cant load travel message. Will use plugin default");
             travelingMessage = "Traveling ";
         }
+
+        // Load recording message from config
         try {
             recordMessage = Objects.requireNonNull(plugin.getConfig().getString("recording-message")).replace("{path-name}", "");
         } catch (NullPointerException e) {
@@ -48,16 +73,32 @@ public class PlayerWalking implements Listener {
         }
     }
 
+    /**
+     * Handles player movement events.
+     * Shows action bar messages for players on paths or recording paths.
+     * Updates path recording for players who are tracking paths.
+     * Displays particles for visible paths.
+     *
+     * @param event The PlayerMoveEvent
+     */
     @EventHandler
     public void onPlayerMove(PlayerMoveEvent event) {
         Player player = event.getPlayer();
 
-        if ((event.getFrom().getX() != event.getTo().getX()) || (event.getFrom().getY() != event.getTo().getY()) || (event.getFrom().getZ() != event.getTo().getZ())) {
+        // Only process if the player has actually moved position (not just looked around)
+        if ((event.getFrom().getX() != event.getTo().getX()) ||
+                (event.getFrom().getY() != event.getTo().getY()) ||
+                (event.getFrom().getZ() != event.getTo().getZ())) {
+
+            // Check if player is near any path and show appropriate messages
             for (Path path : pathRecorder.getPaths().values()) {
+                // Only check paths that aren't currently being recorded
                 if (!pathRecorder.getTrackedPaths().containsValue(path.getName())) {
                     for (Location location : path.getTrackedPath()) {
+                        // Get players near this path point
                         Collection<Player> closePlayers = location.getNearbyPlayers(path.getRadius());
                         for (Player closePlayer : closePlayers) {
+                            // Show action bar message to players near the path
                             final TextComponent text = Component
                                     .text(travelingMessage)
                                     .color(TextColor.color(0xF5C45E))
@@ -71,10 +112,12 @@ public class PlayerWalking implements Listener {
                 }
             }
 
+            // Handle players who are recording paths
             if (pathRecorder.isPlayerTracking(player.getUniqueId())) {
                 String pathName = pathRecorder.getTrackedPaths().get(player.getUniqueId());
                 Path path = pathRecorder.getPaths().get(pathName);
 
+                // Show recording message in action bar
                 final TextComponent text = Component
                         .text(recordMessage)
                         .color(TextColor.color(0xF5C45E))
@@ -84,16 +127,15 @@ public class PlayerWalking implements Listener {
                                 .decoration(TextDecoration.BOLD, true));
                 player.sendActionBar(text);
 
+                // Show the path to the player who is recording it
                 path.displayPath(player, displayParticle);
+
+                // Record the player's movement
                 pathRecorder.trackPaths(player);
             }
 
+            // Display paths that the player has chosen to see
             pathRecorder.displayPaths(player);
         }
-
-
     }
-
-
-
 }

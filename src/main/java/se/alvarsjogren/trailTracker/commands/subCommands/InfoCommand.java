@@ -12,8 +12,10 @@ import se.alvarsjogren.trailTracker.utilities.UITextComponents;
 
 /**
  * Command that displays detailed information about a specific path.
+ * Shows comprehensive metadata and statistics about a path.
  */
 public class InfoCommand implements SubCommand {
+    /** Reference to the PathRecorder for accessing path information */
     private final PathRecorder pathRecorder;
 
     /**
@@ -40,26 +42,38 @@ public class InfoCommand implements SubCommand {
         return "/tt info <path>";
     }
 
+    /**
+     * Displays detailed information about a specific path.
+     * Shows path metadata, statistics, and status in a formatted display.
+     *
+     * @param sender The command sender (must be a player)
+     * @param args The command arguments (args[1] = path name)
+     */
     @Override
     public void perform(CommandSender sender, String[] args) {
+        // Command can only be executed by players
         if (!(sender instanceof Player player)) {
             sender.sendMessage(UITextComponents.errorMessage("Only a player can use this command."));
             return;
         }
 
+        // Check permissions
         if (!player.hasPermission("TrailTracker.info")) {
             player.sendMessage(UITextComponents.errorMessage("You are not allowed to use that command."));
             return;
         }
 
+        // Validate command format
         if (args.length < 2) {
             player.sendMessage(UITextComponents.errorMessage("Wrong usage. Use /tt info <path>"));
             return;
         }
 
+        // Get path name from arguments
         String pathName = args[1];
         Path path = pathRecorder.getPaths().get(pathName);
 
+        // Check if path exists
         if (path == null) {
             player.sendMessage(UITextComponents.errorMessage("Path not found: " + pathName));
             return;
@@ -68,6 +82,7 @@ public class InfoCommand implements SubCommand {
         // Display path information in a formatted message
         player.sendMessage("\n");
 
+        // Create styled header with path name
         final TextComponent header = Component
                 .text("=== ")
                 .color(TextColor.color(0xE78B48))
@@ -107,7 +122,7 @@ public class InfoCommand implements SubCommand {
                         .color(TextColor.color(0xF5C45E)));
         player.sendMessage(radius);
 
-        // Status
+        // Status - is the path currently being tracked?
         boolean isBeingTracked = pathRecorder.getTrackedPaths().containsValue(path.getName());
         final TextComponent status = Component
                 .text("Status: ")
@@ -117,7 +132,7 @@ public class InfoCommand implements SubCommand {
                         .color(isBeingTracked ? TextColor.color(0xBE3D2A) : TextColor.color(0xF5C45E)));
         player.sendMessage(status);
 
-        // Currently displayed by
+        // Count how many players are currently displaying this path
         int displayCount = 0;
         for (var entry : pathRecorder.getDisplayedPaths().entrySet()) {
             if (entry.getValue().contains(path.getName())) {
@@ -133,6 +148,7 @@ public class InfoCommand implements SubCommand {
                         .color(TextColor.color(0xF5C45E)));
         player.sendMessage(displayed);
 
+        // Create styled footer
         final TextComponent footer = Component
                 .text("=======================")
                 .color(TextColor.color(0xE78B48));
