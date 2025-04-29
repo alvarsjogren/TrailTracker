@@ -20,7 +20,6 @@ import java.util.Objects;
 
 public class PlayerWalking implements Listener {
     private final PathRecorder pathRecorder;
-    private final FileConfiguration config;
 
     private Particle displayParticle;
     private String travelingMessage;
@@ -29,7 +28,6 @@ public class PlayerWalking implements Listener {
 
     public PlayerWalking(TrailTracker plugin) {
         this.pathRecorder = plugin.pathRecorder;
-        this.config = plugin.getConfig();
 
         try {
             displayParticle = Particle.valueOf(plugin.getConfig().getString("default-display-particle"));
@@ -59,7 +57,7 @@ public class PlayerWalking implements Listener {
             for (Path path : pathRecorder.getPaths().values()) {
                 if (!pathRecorder.getTrackedPaths().containsValue(path.getName())) {
                     for (Location location : path.getTrackedPath()) {
-                        Collection<Player> closePlayers = location.getNearbyPlayers(config.getInt("path-radius"));
+                        Collection<Player> closePlayers = location.getNearbyPlayers(path.getRadius());
                         for (Player closePlayer : closePlayers) {
                             final TextComponent text = Component
                                     .text(travelingMessage)
