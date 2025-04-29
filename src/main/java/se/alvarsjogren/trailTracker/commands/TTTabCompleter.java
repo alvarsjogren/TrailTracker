@@ -34,7 +34,7 @@ public class TTTabCompleter implements TabCompleter {
     }
 
     @Override
-    public List<String> onTabComplete(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+    public List<String> onTabComplete(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String label, @NotNull String @NotNull [] args) {
         List<String> completions = new ArrayList<>();
 
         if (args.length == 1) {

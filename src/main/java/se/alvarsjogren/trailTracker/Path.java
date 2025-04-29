@@ -178,7 +178,7 @@ public class Path {
         }
 
         // Get the last location in the path
-        Location lastLocation = trackedPath.get(trackedPath.size() - 1);
+        Location lastLocation = trackedPath.getLast();
 
         // Only skip if the location is exactly the same (player is completely still)
         // This compares x, y, z and world - we want to capture even tiny movements

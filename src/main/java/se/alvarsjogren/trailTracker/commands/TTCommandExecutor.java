@@ -20,7 +20,6 @@ import java.util.List;
 public class TTCommandExecutor implements CommandExecutor {
 
     private final List<SubCommand> subCommands = new ArrayList<>();
-    private final TrailTracker plugin;
 
     /**
      * Creates a new TTCommandExecutor.
@@ -28,7 +27,6 @@ public class TTCommandExecutor implements CommandExecutor {
      * @param plugin The TrailTracker plugin instance
      */
     public TTCommandExecutor(TrailTracker plugin) {
-        this.plugin = plugin;
 
         // Register all subcommands
         subCommands.add(new HelpCommand(subCommands));

@@ -103,7 +103,7 @@ public class InfoCommand implements SubCommand {
                 .text("Detection Radius: ")
                 .color(TextColor.color(0xE78B48))
                 .append(Component
-                        .text(String.valueOf(path.getRadius()) + " blocks")
+                        .text(path.getRadius() + " blocks")
                         .color(TextColor.color(0xF5C45E)));
         player.sendMessage(radius);
 
