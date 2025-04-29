@@ -1,10 +1,5 @@
 package se.alvarsjogren.trailTracker.commands.subCommands;
 
-
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
-import net.kyori.adventure.text.format.TextColor;
-import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import se.alvarsjogren.trailTracker.PathRecorder;
@@ -45,15 +40,8 @@ public class StopCommand implements SubCommand{
                     }
                     PathRecorder.Result result = pathRecorder.stopTrackingPath(player.getUniqueId());
                     if (result.flag) {
-                        final TextComponent text = Component
-                                        .text("Stopped tracking path ")
-                                        .color(TextColor.color(0xF5C45E))
-                                .append(Component
-                                        .text(pathName)
-                                        .color(TextColor.color(0xE78B48))
-                                        .decoration(TextDecoration.BOLD, true));
-                        player.sendMessage(UITextComponents.TTPrefix().append(text));
 
+                        player.sendMessage(UITextComponents.successMessage("Stopped tracking path", pathName));
                     } else player.sendMessage(UITextComponents.errorMessage(result.message));
                 } else player.sendMessage(UITextComponents.errorMessage("Wrong usage. Use /tt help for usage."));
             } else player.sendMessage(UITextComponents.errorMessage("You are not allowed to use that command."));

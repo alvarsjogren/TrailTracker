@@ -1,10 +1,5 @@
 package se.alvarsjogren.trailTracker.commands.subCommands;
 
-
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
-import net.kyori.adventure.text.format.TextColor;
-import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import se.alvarsjogren.trailTracker.PathRecorder;
@@ -45,29 +40,13 @@ public class DisplayCommand implements SubCommand{
                     if (args[1].equals("on")) {
                         PathRecorder.Result result = pathRecorder.startDisplayingPath(player.getUniqueId(), pathName);
                         if (result.flag) {
-                            final TextComponent text = Component
-                                            .text("Started displaying path ")
-                                            .color(TextColor.color(0xF5C45E))
-                                    .append(Component
-                                            .text(pathName)
-                                            .color(TextColor.color(0xE78B48))
-                                            .decoration(TextDecoration.BOLD, true));
-                            player.sendMessage(UITextComponents.TTPrefix().append(text));
-
+                            player.sendMessage(UITextComponents.successMessage("Started displaying path", pathName));
                         } else player.sendMessage(UITextComponents.errorMessage(result.message));
 
                     } else if (args[1].equals("off")) {
                         PathRecorder.Result result = pathRecorder.stopDisplayingPath(player.getUniqueId(), pathName);
                         if (result.flag) {
-                            final TextComponent text = Component
-                                            .text("Stopped displaying path ")
-                                            .color(TextColor.color(0xF5C45E))
-                                    .append(Component
-                                            .text(pathName)
-                                            .color(TextColor.color(0xE78B48))
-                                            .decoration(TextDecoration.BOLD, true));
-                            player.sendMessage(UITextComponents.TTPrefix().append(text));
-
+                            player.sendMessage(UITextComponents.successMessage("Stopped displaying path", pathName));
                         } else player.sendMessage(UITextComponents.errorMessage(result.message));
                     }
                 } else player.sendMessage(UITextComponents.errorMessage("Wrong usage. Use /tt help for usage."));
