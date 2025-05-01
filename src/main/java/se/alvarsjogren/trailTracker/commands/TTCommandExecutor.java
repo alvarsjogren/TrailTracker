@@ -9,6 +9,7 @@ import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 import se.alvarsjogren.trailTracker.TrailTracker;
 import se.alvarsjogren.trailTracker.commands.subCommands.*;
+import se.alvarsjogren.trailTracker.utilities.UITextComponents;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -59,14 +60,7 @@ public class TTCommandExecutor implements CommandExecutor {
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         // Show default message if no arguments provided
         if (args.length == 0) {
-            final TextComponent text = Component
-                    .text("[tt] ")
-                    .color(TextColor.color(0x102E50))
-                    .append(Component
-                            .text("Use /tt help for commands.")
-                            .color(TextColor.color(0xF5C45E)));
-
-            sender.sendMessage(text);
+            sender.sendMessage(UITextComponents.errorMessage("Use /tt help for commands."));
             return true;
         }
 
@@ -79,13 +73,7 @@ public class TTCommandExecutor implements CommandExecutor {
         }
 
         // No matching subcommand found, show error message
-        final TextComponent text = Component
-                .text("[tt] ")
-                .color(TextColor.color(0x102E50))
-                .append(Component
-                        .text("Unknown command. Use /tt help.")
-                        .color(TextColor.color(0xF5C45E)));
-        sender.sendMessage(text);
+        sender.sendMessage(UITextComponents.errorMessage("Unknown command. Use /tt help."));
         return true;
     }
 
