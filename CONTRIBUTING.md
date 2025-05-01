@@ -69,7 +69,7 @@ We welcome feature suggestions! When suggesting a feature:
 ### Setting Up Your Development Environment
 
 1. Clone your fork of the repository
-2. Set up a Paper test server (version 1.21.4+)
+2. Set up a Paper test server (version 1.21.1+)
 3. Install Java 21 or newer
 4. Set up your IDE (IntelliJ IDEA recommended for Java development)
     - Import the project as a Maven project

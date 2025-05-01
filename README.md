@@ -17,6 +17,29 @@ TrailTracker allows players to record their movements as paths, save them for fu
 - **User-Friendly**: Simple commands with tab completion
 - **Version Compatible**: Works across multiple Minecraft versions
 
+## Beta Testing
+
+TrailTracker is currently in beta testing. We welcome your feedback and contributions!
+
+### Current Beta Version
+
+**Version 1.1.0-beta.1** - [Download](https://github.com/alvarsjogren/TrailTracker/releases/tag/v1.1.0-beta.1)
+
+### How to Participate in Testing
+
+1. Download the latest beta release from the [Releases page](https://github.com/alvarsjogren/TrailTracker/releases)
+2. Install on your test server
+3. Join the [Beta Testing Discussion](https://github.com/alvarsjogren/TrailTracker/discussions) to share your feedback
+4. Report bugs by creating [Issues](https://github.com/alvarsjogren/TrailTracker/issues)
+
+### Testing Guidelines
+
+Please refer to [TESTING.md](TESTING.md) for comprehensive testing guidelines and test cases.
+
+### Version Compatibility
+
+For information about version compatibility, see [VERSION_COMPATIBILITY.md](VERSION_COMPATIBILITY.md).
+
 ## Version Compatibility
 
 | Minecraft Version | Support Level     | Notes                                            |
