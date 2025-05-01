@@ -7,10 +7,11 @@ import se.alvarsjogren.trailTracker.TrailTracker;
 import se.alvarsjogren.trailTracker.utilities.UITextComponents;
 
 import java.util.Arrays;
+import java.util.Set;
 
 /**
  * Command that controls path visibility for players.
- * Allows players to show or hide specific paths with particles.
+ * Allows players to toggle the visibility of specific paths with particles.
  */
 public class DisplayCommand implements SubCommand {
     /** Reference to the PathRecorder for managing path display */
@@ -32,20 +33,21 @@ public class DisplayCommand implements SubCommand {
 
     @Override
     public String getDescription() {
-        return "Starts displaying the path.";
+        return "Toggles display of the specified path.";
     }
 
     @Override
     public String getSyntax() {
-        return "/tt display on|off <path>";
+        return "/tt display <path>";
     }
 
     /**
      * Toggles path visibility for the player.
-     * Allows turning on/off visibility of specific paths with particles.
+     * If the path is not currently being displayed, it will start displaying.
+     * If the path is already being displayed, it will stop displaying.
      *
      * @param sender The command sender (must be a player)
-     * @param args Command arguments: "on"/"off" followed by path name
+     * @param args Command arguments: path name
      */
     @Override
     public void perform(CommandSender sender, String[] args) {
@@ -62,35 +64,40 @@ public class DisplayCommand implements SubCommand {
         }
 
         // Validate command format
-        if (args.length < 3) {
-            player.sendMessage(UITextComponents.errorMessage("Wrong usage. Use /tt help for usage."));
-            return;
-        }
-
-        // Validate on/off parameter
-        String option = args[1].toLowerCase();
-        if (!option.equals("on") && !option.equals("off")) {
-            player.sendMessage(UITextComponents.errorMessage("Use either 'on' or 'off'. Example: /tt display on <path>"));
+        if (args.length < 2) {
+            player.sendMessage(UITextComponents.errorMessage("Wrong usage. Use /tt display <path>"));
             return;
         }
 
         // Combine all remaining arguments for path name to allow spaces
-        String pathName = String.join(" ", Arrays.copyOfRange(args, 2, args.length));
+        String pathName = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
 
-        // Handle display on/off variants
-        if (option.equals("on")) {
-            // Turn on path display
-            PathRecorder.Result result = pathRecorder.startDisplayingPath(player.getUniqueId(), pathName);
+        // Check if the path exists
+        if (!pathRecorder.getPaths().containsKey(pathName)) {
+            player.sendMessage(UITextComponents.errorMessage("Path not found: " + pathName));
+            return;
+        }
+
+        // Check if player is already displaying this path
+        Set<String> playerDisplayedPaths = pathRecorder.getDisplayedPaths().get(player.getUniqueId());
+        boolean isDisplaying = playerDisplayedPaths != null && playerDisplayedPaths.contains(pathName);
+
+        PathRecorder.Result result;
+
+        // Toggle the display status
+        if (isDisplaying) {
+            // Path is currently displayed - stop displaying it
+            result = pathRecorder.stopDisplayingPath(player.getUniqueId(), pathName);
             if (result.flag) {
-                player.sendMessage(UITextComponents.successMessage("Started displaying path", pathName));
+                player.sendMessage(UITextComponents.successMessage("Stopped displaying path", pathName));
             } else {
                 player.sendMessage(UITextComponents.errorMessage(result.message));
             }
         } else {
-            // Turn off path display
-            PathRecorder.Result result = pathRecorder.stopDisplayingPath(player.getUniqueId(), pathName);
+            // Path is not displayed - start displaying it
+            result = pathRecorder.startDisplayingPath(player.getUniqueId(), pathName);
             if (result.flag) {
-                player.sendMessage(UITextComponents.successMessage("Stopped displaying path", pathName));
+                player.sendMessage(UITextComponents.successMessage("Started displaying path", pathName));
             } else {
                 player.sendMessage(UITextComponents.errorMessage(result.message));
             }
