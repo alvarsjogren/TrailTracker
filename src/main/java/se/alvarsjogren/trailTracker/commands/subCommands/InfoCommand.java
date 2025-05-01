@@ -10,6 +10,8 @@ import se.alvarsjogren.trailTracker.PathRecorder;
 import se.alvarsjogren.trailTracker.TrailTracker;
 import se.alvarsjogren.trailTracker.utilities.UITextComponents;
 
+import java.util.Arrays;
+
 /**
  * Command that displays detailed information about a specific path.
  * Shows comprehensive metadata and statistics about a path.
@@ -47,7 +49,7 @@ public class InfoCommand implements SubCommand {
      * Shows path metadata, statistics, and status in a formatted display.
      *
      * @param sender The command sender (must be a player)
-     * @param args The command arguments (args[1] = path name)
+     * @param args The command arguments (args[1+] = path name)
      */
     @Override
     public void perform(CommandSender sender, String[] args) {
@@ -69,8 +71,8 @@ public class InfoCommand implements SubCommand {
             return;
         }
 
-        // Get path name from arguments
-        String pathName = args[1];
+        // Combine all remaining arguments for path name to allow spaces
+        String pathName = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
         Path path = pathRecorder.getPaths().get(pathName);
 
         // Check if path exists
@@ -84,15 +86,8 @@ public class InfoCommand implements SubCommand {
 
         // Create styled header with path name
         final TextComponent header = Component
-                .text("=== ")
-                .color(TextColor.color(0xE78B48))
-                .append(Component.text("Path Info: ")
-                        .color(TextColor.color(0x102E50)))
-                .append(Component.text(path.getName() + " ")
-                        .color(TextColor.color(0xBE3D2A)))
-                .append(Component
-                        .text("===")
-                        .color(TextColor.color(0xE78B48)));
+                .text("=== Path Info: " + path.getName() + " ===")
+                .color(TextColor.color(0xE78B48));
         player.sendMessage(header);
 
         // Description
