@@ -1,13 +1,9 @@
 package se.alvarsjogren.trailTracker.commands.subCommands;
 
-
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
-import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
-import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import se.alvarsjogren.trailTracker.Path;
 import se.alvarsjogren.trailTracker.PathRecorder;
 import se.alvarsjogren.trailTracker.TrailTracker;
@@ -16,7 +12,7 @@ import se.alvarsjogren.trailTracker.TrailTracker;
  * Command that lists all available paths.
  * Displays a formatted list of all paths with their descriptions.
  */
-public class ListCommand implements SubCommand{
+public class ListCommand implements SubCommand {
     /** Reference to the PathRecorder for accessing path information */
     private final PathRecorder pathRecorder;
 
@@ -54,7 +50,11 @@ public class ListCommand implements SubCommand{
      */
     @Override
     public void perform(CommandSender sender, String[] args) {
+        // No permission check needed as this is visible to everyone
+
+        // Start with a blank line for cleaner output
         sender.sendMessage("\n");
+
         // Create styled header with plugin colors
         final TextComponent header = Component
                 .text("=== ")
@@ -81,6 +81,8 @@ public class ListCommand implements SubCommand{
                 .text("=======================")
                 .color(TextColor.color(0xE78B48));
         sender.sendMessage(footer);
+
+        // End with a blank line for cleaner output
         sender.sendMessage("\n");
     }
 }

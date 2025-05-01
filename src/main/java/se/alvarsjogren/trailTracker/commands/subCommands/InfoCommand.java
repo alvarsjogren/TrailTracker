@@ -82,6 +82,16 @@ public class InfoCommand implements SubCommand {
         }
 
         // Display path information in a formatted message
+        displayPathInfo(player, path);
+    }
+
+    /**
+     * Helper method to display detailed path information to a player.
+     *
+     * @param player The player to display information to
+     * @param path The path to display information about
+     */
+    private void displayPathInfo(Player player, Path path) {
         player.sendMessage("\n");
 
         // Create styled header with path name

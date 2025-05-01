@@ -12,7 +12,7 @@ import java.util.Arrays;
  * Command that starts tracking a new path.
  * Creates a new path and begins recording player movement.
  */
-public class StartCommand implements SubCommand{
+public class StartCommand implements SubCommand {
     /** Reference to the PathRecorder for managing paths */
     private final PathRecorder pathRecorder;
 

@@ -10,7 +10,7 @@ import se.alvarsjogren.trailTracker.utilities.UITextComponents;
  * Command that stops tracking the current path.
  * Ends recording of player movement for path creation.
  */
-public class StopCommand implements SubCommand{
+public class StopCommand implements SubCommand {
     /** Reference to the PathRecorder for managing paths */
     private final PathRecorder pathRecorder;
 
@@ -48,26 +48,37 @@ public class StopCommand implements SubCommand{
     @Override
     public void perform(CommandSender sender, String[] args) {
         // Command can only be executed by players
-        if (sender instanceof Player player) {
-            // Check permissions
-            if (player.hasPermission("TrailTracker.startstop")) {
-                // Validate command format
-                if (args.length == 1) {
-                    // Get the path name being tracked (if any)
-                    String pathName = "";
-                    if (pathRecorder.isPlayerTracking(player.getUniqueId())) {
-                        pathName = pathRecorder.getTrackedPaths().get(player.getUniqueId());
-                    }
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage(UITextComponents.errorMessage("Only a player can use this command."));
+            return;
+        }
 
-                    // Attempt to stop tracking
-                    PathRecorder.Result result = pathRecorder.stopTrackingPath(player.getUniqueId());
+        // Check permissions
+        if (!player.hasPermission("TrailTracker.startstop")) {
+            player.sendMessage(UITextComponents.errorMessage("You are not allowed to use that command."));
+            return;
+        }
 
-                    // Display appropriate success/error message
-                    if (result.flag) {
-                        player.sendMessage(UITextComponents.successMessage("Stopped tracking path", pathName));
-                    } else player.sendMessage(UITextComponents.errorMessage(result.message));
-                } else player.sendMessage(UITextComponents.errorMessage("Wrong usage. Use /tt help for usage."));
-            } else player.sendMessage(UITextComponents.errorMessage("You are not allowed to use that command."));
-        } else sender.sendMessage(UITextComponents.errorMessage("Only a player can use this command."));
+        // Validate command format
+        if (args.length != 1) {
+            player.sendMessage(UITextComponents.errorMessage("Wrong usage. Use /tt help for usage."));
+            return;
+        }
+
+        // Get the path name being tracked (if any)
+        String pathName = "";
+        if (pathRecorder.isPlayerTracking(player.getUniqueId())) {
+            pathName = pathRecorder.getTrackedPaths().get(player.getUniqueId());
+        }
+
+        // Attempt to stop tracking
+        PathRecorder.Result result = pathRecorder.stopTrackingPath(player.getUniqueId());
+
+        // Display appropriate success/error message
+        if (result.flag) {
+            player.sendMessage(UITextComponents.successMessage("Stopped tracking path", pathName));
+        } else {
+            player.sendMessage(UITextComponents.errorMessage(result.message));
+        }
     }
 }

@@ -62,48 +62,71 @@ public class DescribeCommand implements SubCommand {
             return;
         }
 
-        // Validate command format - need at least the command name
-        if (args.length < 2) {
+        // Validate command format - need at least the command name and one more argument
+        if (args.length < 3) {
             player.sendMessage(UITextComponents.errorMessage("Wrong usage. Use /tt describe <path> <description>"));
             return;
         }
 
-        // Special case: Check if just path name was provided without description
-        String fullEnteredText = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
-        Path exactPathMatch = pathRecorder.getPaths().get(fullEnteredText);
-        if (exactPathMatch != null) {
-            // We found a complete path name but no description
-            player.sendMessage(UITextComponents.errorMessage("Please provide a description after the path name."));
+        // Try to identify path name and description from the arguments
+        String pathName = findPathName(args);
+
+        // Check if a valid path was found
+        if (pathName == null) {
+            player.sendMessage(UITextComponents.errorMessage("Path not found. Use /tt list to see available paths."));
             return;
         }
 
-        // Try to identify path name and description from the arguments
-        boolean foundPath = false;
-        Path path = null;
-        String pathName = "";
-        String description = "";
+        // Get the path object
+        Path path = pathRecorder.getPaths().get(pathName);
 
-        // Try different combinations for path name and description
-        for (int i = 1; i < args.length - 1; i++) {  // Ensure at least one argument remains for description
-            // Try using i arguments for the path name
-            pathName = String.join(" ", Arrays.copyOfRange(args, 1, i + 1));
-            description = String.join(" ", Arrays.copyOfRange(args, i + 1, args.length));
-
-            path = pathRecorder.getPaths().get(pathName);
-            if (path != null) {
-                // Found a valid path with description
-                foundPath = true;
+        // Extract the description - everything after the path name
+        int pathEndIndex = -1;
+        for (int i = 1; i <= args.length - 1; i++) {
+            String testPath = String.join(" ", Arrays.copyOfRange(args, 1, i + 1));
+            if (testPath.equals(pathName)) {
+                pathEndIndex = i;
                 break;
             }
         }
 
-        // Check if we found a path with description
-        if (foundPath && path != null) {
-            // Update the description
-            path.setDescription(description);
-            player.sendMessage(UITextComponents.successMessage("Updated description for", pathName));
-        } else {
-            player.sendMessage(UITextComponents.errorMessage("Path not found. Use /tt list to see available paths."));
+        if (pathEndIndex == -1 || pathEndIndex >= args.length - 1) {
+            player.sendMessage(UITextComponents.errorMessage("Please provide a description after the path name."));
+            return;
         }
+
+        String description = String.join(" ", Arrays.copyOfRange(args, pathEndIndex + 1, args.length));
+
+        // Update the description
+        path.setDescription(description);
+        player.sendMessage(UITextComponents.successMessage("Updated description for", pathName));
+    }
+
+    /**
+     * Helper method to find a valid path name from command arguments.
+     * Tries different combinations of arguments to match an existing path.
+     *
+     * @param args The command arguments
+     * @return The matching path name, or null if no path was found
+     */
+    private String findPathName(String[] args) {
+        // Special case: Check if the entire argument string is a path
+        String fullEnteredText = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
+        Path exactPathMatch = pathRecorder.getPaths().get(fullEnteredText);
+        if (exactPathMatch != null) {
+            return fullEnteredText;
+        }
+
+        // Try different combinations for path name
+        for (int i = 1; i < args.length - 1; i++) {
+            // Try using i arguments for the path name
+            String pathName = String.join(" ", Arrays.copyOfRange(args, 1, i + 1));
+
+            if (pathRecorder.getPaths().containsKey(pathName)) {
+                return pathName;
+            }
+        }
+
+        return null;
     }
 }

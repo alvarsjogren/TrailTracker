@@ -1,6 +1,5 @@
 package se.alvarsjogren.trailTracker.commands.subCommands;
 
-
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.TextColor;
@@ -12,7 +11,7 @@ import java.util.List;
  * Command that shows help information for all available commands.
  * Displays a formatted list of all registered subcommands with descriptions.
  */
-public class HelpCommand implements SubCommand{
+public class HelpCommand implements SubCommand {
     /** List of all registered subcommands to display help for */
     private final List<SubCommand> subCommands;
 
@@ -45,11 +44,15 @@ public class HelpCommand implements SubCommand{
      * Uses Adventure API for rich text formatting.
      *
      * @param sender The command sender (player or console)
-     * @param args The command arguments
+     * @param args The command arguments (not used)
      */
     @Override
     public void perform(CommandSender sender, String[] args) {
+        // No permission check needed as help is visible to everyone
+
+        // Start with a blank line for cleaner output
         sender.sendMessage("\n");
+
         // Create styled header with plugin colors
         final TextComponent header = Component
                 .text("=== ")
@@ -76,6 +79,8 @@ public class HelpCommand implements SubCommand{
                 .text("==========================")
                 .color(TextColor.color(0xE78B48));
         sender.sendMessage(footer);
+
+        // End with a blank line for cleaner output
         sender.sendMessage("\n");
     }
 }

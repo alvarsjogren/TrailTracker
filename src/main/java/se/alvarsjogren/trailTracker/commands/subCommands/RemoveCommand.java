@@ -12,7 +12,7 @@ import java.util.Arrays;
  * Command that removes an existing path from the system.
  * Deletes a path permanently from memory (will be removed from storage on next save).
  */
-public class RemoveCommand implements SubCommand{
+public class RemoveCommand implements SubCommand {
     /** Reference to the PathRecorder for managing paths */
     private final PathRecorder pathRecorder;
 
@@ -50,24 +50,34 @@ public class RemoveCommand implements SubCommand{
     @Override
     public void perform(CommandSender sender, String[] args) {
         // Command can only be executed by players
-        if (sender instanceof Player player) {
-            // Check permissions
-            if (player.hasPermission("TrailTracker.startstop")) {
-                // Validate command format
-                if (args.length >= 2) {
-                    // Combine all remaining arguments for path name to allow spaces
-                    String pathName = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage(UITextComponents.errorMessage("Only a player can use this command."));
+            return;
+        }
 
-                    // Attempt to remove the path
-                    PathRecorder.Result result = pathRecorder.removePath(pathName);
+        // Check permissions
+        if (!player.hasPermission("TrailTracker.startstop")) {
+            player.sendMessage(UITextComponents.errorMessage("You are not allowed to use that command."));
+            return;
+        }
 
-                    // Display appropriate success/error message
-                    if (result.flag) {
-                        player.sendMessage(UITextComponents.successMessage("Removed path", pathName));
-                    } else player.sendMessage(UITextComponents.errorMessage(result.message));
+        // Validate command format
+        if (args.length < 2) {
+            player.sendMessage(UITextComponents.errorMessage("Wrong usage. Use /tt help for usage."));
+            return;
+        }
 
-                } else player.sendMessage(UITextComponents.errorMessage("Wrong usage. Use /tt help for usage."));
-            } else player.sendMessage(UITextComponents.errorMessage("You are not allowed to use that command."));
-        } else sender.sendMessage(UITextComponents.errorMessage("Only a player can use this command."));
+        // Combine all remaining arguments for path name to allow spaces
+        String pathName = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
+
+        // Attempt to remove the path
+        PathRecorder.Result result = pathRecorder.removePath(pathName);
+
+        // Display appropriate success/error message
+        if (result.flag) {
+            player.sendMessage(UITextComponents.successMessage("Removed path", pathName));
+        } else {
+            player.sendMessage(UITextComponents.errorMessage(result.message));
+        }
     }
 }
