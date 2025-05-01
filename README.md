@@ -36,10 +36,6 @@ TrailTracker is currently in beta testing. We welcome your feedback and contribu
 
 Please refer to [TESTING.md](TESTING.md) for comprehensive testing guidelines and test cases.
 
-### Version Compatibility
-
-For information about version compatibility, see [VERSION_COMPATIBILITY.md](VERSION_COMPATIBILITY.md).
-
 ## Version Compatibility
 
 | Minecraft Version | Support Level     | Notes                                            |
