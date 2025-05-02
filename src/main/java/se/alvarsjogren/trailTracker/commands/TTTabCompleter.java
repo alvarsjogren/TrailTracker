@@ -3,7 +3,6 @@ package se.alvarsjogren.trailTracker.commands;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
-import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import se.alvarsjogren.trailTracker.Path;
 import se.alvarsjogren.trailTracker.PathRecorder;
@@ -71,12 +70,32 @@ public class TTTabCompleter implements TabCompleter {
                 case "remove":
                 case "info":
                 case "describe":
+                case "display":
                     // Complete with path names for commands that operate on existing paths
                     completions = suggestPartialPathNames(args, 1);
                     break;
-                case "display":
-                    // For display toggle command, suggest all available paths
-                    completions = suggestPartialPathNames(args, 1);
+                case "modify":
+                    if (args.length == 2) {
+                        // Suggest path names for the first argument of modify
+                        completions = suggestPartialPathNames(args, 1);
+                    } else if (args.length == 3) {
+                        // Find if we've completed a path name
+                        String pathName = findCompletedPathName(args);
+                        if (pathName != null) {
+                            // Get the modify command to access available actions
+                            SubCommand modifyCmd = subCommands.stream()
+                                    .filter(cmd -> cmd.getName().equals("modify"))
+                                    .findFirst()
+                                    .orElse(null);
+
+                            if (modifyCmd instanceof ModifyCommand) {
+                                // Suggest available actions for the second argument
+                                completions = ((ModifyCommand) modifyCmd).getAvailableActions().stream()
+                                        .filter(action -> action.toLowerCase().startsWith(args[2].toLowerCase()))
+                                        .collect(Collectors.toList());
+                            }
+                        }
+                    }
                     break;
             }
         }
@@ -131,5 +150,26 @@ public class TTTabCompleter implements TabCompleter {
 
             return nextWordSuggestions.isEmpty() ? matchingPaths : nextWordSuggestions;
         }
+    }
+
+    /**
+     * Helper method to find a completed path name from command arguments.
+     * Used for tab completion of subsequent arguments.
+     *
+     * @param args The command arguments
+     * @return The matching path name, or null if no path was found
+     */
+    private String findCompletedPathName(String[] args) {
+        // Try different combinations for path name
+        for (int i = 1; i < args.length - 1; i++) {
+            // Try using i arguments for the path name
+            String pathName = String.join(" ", java.util.Arrays.copyOfRange(args, 1, i + 1));
+
+            if (pathRecorder.getPaths().containsKey(pathName)) {
+                return pathName;
+            }
+        }
+
+        return null;
     }
 }

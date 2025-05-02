@@ -1,8 +1,5 @@
 package se.alvarsjogren.trailTracker.commands;
 
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
-import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -44,6 +41,7 @@ public class TTCommandExecutor implements CommandExecutor {
         subCommands.add(new DisplayCommand(plugin));
         subCommands.add(new DescribeCommand(plugin));
         subCommands.add(new InfoCommand(plugin));
+        subCommands.add(new ModifyCommand(plugin));
     }
 
     /**
