@@ -34,16 +34,17 @@ public final class TrailTracker extends JavaPlugin {
         // Plugin startup logic
         getLogger().info("Starting up...");
 
+        // Check if the server version is compatible - we require 1.21+
+        if (!isServerVersionCompatible()) {
+            getLogger().severe("TrailTracker requires Minecraft 1.21 or newer!");
+            getLogger().severe("This server is running: " + VersionCompatibility.getVersionString());
+            getLogger().severe("The plugin will now disable itself.");
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
+
         // Log the detected server version
         getLogger().info("Detected Minecraft version: " + VersionCompatibility.getVersionString());
-
-        // Check if the server version is compatible - we support 1.19+
-        if (!isServerVersionCompatible()) {
-            getLogger().warning("Running on an older version: " + VersionCompatibility.getVersionString());
-            getLogger().warning("TrailTracker is optimized for 1.19 or newer.");
-            getLogger().warning("The plugin should still work, but please report any issues.");
-            // We'll continue loading the plugin and just warn instead of throwing an error
-        }
 
         // Save default config if it doesn't exist
         saveDefaultConfig();
@@ -74,13 +75,13 @@ public final class TrailTracker extends JavaPlugin {
 
     /**
      * Checks if the server version is supported by this plugin.
-     * We support Minecraft 1.19 and newer, with best support for 1.21+
+     * We require Minecraft 1.21+.
      *
      * @return true if the server version is compatible, false otherwise
      */
     private boolean isServerVersionCompatible() {
-        // Support Minecraft 1.19+
-        return VersionCompatibility.getMajorVersion() >= 19;
+        // Require Minecraft 1.21+
+        return VersionCompatibility.getMajorVersion() >= 21;
     }
 
     /**

@@ -15,7 +15,6 @@ TrailTracker allows players to record their movements as paths, save them for fu
 - **Configurable**: Customize particles, detection radius, and more
 - **Permission-Based**: Control who can create, edit, and view paths
 - **User-Friendly**: Simple commands with tab completion
-- **Version Compatible**: Works across multiple Minecraft versions
 
 ## Beta Testing
 
@@ -36,23 +35,21 @@ TrailTracker is currently in beta testing. We welcome your feedback and contribu
 
 Please refer to [TESTING.md](TESTING.md) for comprehensive testing guidelines and test cases.
 
-## Version Compatibility
+## Requirements
 
-| Minecraft Version | Support Level     | Notes                                            |
-|-------------------|-------------------|--------------------------------------------------|
-| 1.21.1+           | Full Support      | Primary development target                       |
-| 1.20.x            | Compatible        | Should work with minimal issues                  |
-| 1.19.x            | Basic Support     | Core features work, some UI may be different     |
-| 1.18.x and older  | Limited Support   | Basic functionality only, no guarantees          |
+- **Minecraft Version**: 1.21+ (required)
+- **Server Software**: Paper (or compatible fork)
+- **Java**: Java 21 or newer
 
-For detailed information about version compatibility, see [VERSION_COMPATIBILITY.md](VERSION_COMPATIBILITY.md).
+**Important:** This plugin requires Minecraft 1.21 or newer. It will not load on older server versions.
 
 ## Installation
 
 1. Download the latest TrailTracker.jar from [Releases](https://github.com/alvarsjogren/trailtracker/releases)
-2. Place the .jar file in your server's `plugins` folder
-3. Restart your server or run `/reload confirm`
-4. The default configuration will be generated automatically
+2. Ensure your server is running **Paper 1.21+ or compatible fork**
+3. Place the .jar file in your server's `plugins` folder
+4. Restart your server or run `/reload confirm`
+5. The default configuration will be generated automatically
 
 ## Commands
 
@@ -108,12 +105,6 @@ recording-message: "Recording {path-name}"  # Message when recording
 1. Show all available paths: `/tt list`
 2. Start following the particles: `/tt display on ServerTour`
 3. When done, turn off the display: `/tt display off ServerTour`
-
-## Compatibility
-
-- **Supported Minecraft Versions**: 1.18.x - 1.21.x (best on 1.21.1+)
-- **Required**: Paper server (or compatible fork)
-- **Java**: Java 21 or newer
 
 ## Upgrading from Previous Versions
 

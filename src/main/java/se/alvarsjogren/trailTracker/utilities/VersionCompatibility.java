@@ -3,11 +3,10 @@ package se.alvarsjogren.trailTracker.utilities;
 import org.bukkit.Bukkit;
 
 /**
- * Utility class to handle compatibility between different Minecraft versions.
+ * Utility class to handle version detection for TrailTracker.
  *
- * This class provides methods to detect the server version and adjust behavior
- * accordingly, allowing the plugin to maintain compatibility across multiple
- * Minecraft versions.
+ * This class provides methods to detect the server version, ensuring
+ * compatibility with Minecraft 1.21+ which is required for this plugin.
  */
 public class VersionCompatibility {
 
