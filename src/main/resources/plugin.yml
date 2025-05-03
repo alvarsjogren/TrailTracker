@@ -22,7 +22,7 @@ commands:
 # Plugin permissions
 permissions:
   TrailTracker.startstop:
-    description: Allows player to do /tt start <path>, /tt stop, /tt remove <path>, and /tt describe <path>
+    description: Allows player to do /tt start <path>, /tt stop, /tt remove <path>, /tt describe <path>, and /tt modify <path> <option>
     default: op
   TrailTracker.display:
     description: Allows player to do /tt display <path>
