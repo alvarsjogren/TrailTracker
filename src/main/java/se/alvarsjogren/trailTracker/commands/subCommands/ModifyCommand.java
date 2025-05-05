@@ -19,7 +19,7 @@ public class ModifyCommand implements SubCommand {
     private final PathRecorder pathRecorder;
 
     /** List of available modification actions */
-    private final List<String> availableActions = List.of("radius");
+    private final List<String> availableActions = List.of("radius", "particle");
 
     /**
      * Creates a new ModifyCommand.
@@ -140,6 +140,9 @@ public class ModifyCommand implements SubCommand {
             }
         }
 
+        if (action.equals("particle")) {
+
+        }
         // Future actions can be added here
     }
 

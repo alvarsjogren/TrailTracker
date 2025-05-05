@@ -4,8 +4,6 @@ import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
-import se.alvarsjogren.trailTracker.utilities.ParticleManager;
-import se.alvarsjogren.trailTracker.utilities.VersionCompatibility;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -57,9 +55,6 @@ public class PathRecorder {
     /** Default radius around path points where players are detected */
     private int defaultPathRadius;
 
-    /** Manager for handling particles across different versions */
-    private final ParticleManager particleManager;
-
     /**
      * Creates a new PathRecorder with the specified plugin instance.
      * Loads configuration values and starts the display task.
@@ -68,7 +63,6 @@ public class PathRecorder {
      */
     public PathRecorder(TrailTracker plugin) {
         this.plugin = plugin;
-        this.particleManager = new ParticleManager(plugin);
         loadConfigValues();
     }
 
@@ -80,7 +74,7 @@ public class PathRecorder {
         try {
             // Load particle type from config or use default
             String particleName = plugin.getConfig().getString("default-display-particle", "HAPPY_VILLAGER");
-            displayParticle = particleManager.getParticleFromConfig(particleName);
+            displayParticle = getParticleFromConfig(particleName);
         } catch (IllegalArgumentException e) {
             plugin.getLogger().warning("Invalid default-display-particle in config. Using HAPPY_VILLAGER.");
             displayParticle = Particle.HAPPY_VILLAGER;
@@ -92,8 +86,34 @@ public class PathRecorder {
         particleFrequency = plugin.getConfig().getInt("particle-frequency", 5);
         defaultPathRadius = plugin.getConfig().getInt("default-path-radius", 3);
 
-        // Start task to display paths if not already running
         startDisplayTask();
+    }
+
+    /**
+     * Safely get a particle type from config, falling back to a default if the
+     * specified particle doesn't exist in this Minecraft version.
+     *
+     * @param configName The name of the particle from config
+     * @return A valid Particle for this server version
+     */
+    private Particle getParticleFromConfig(String configName) {
+        try {
+            return Particle.valueOf(configName);
+        } catch (IllegalArgumentException e) {
+            plugin.getLogger().warning("Particle type '" + configName + "' not found in this Minecraft version.");
+
+            // Try multiple fallbacks in case some particles don't exist in older versions
+            for (String fallback : new String[]{"HAPPY_VILLAGER", "VILLAGER_HAPPY", "HEART", "CRIT"}) {
+                try {
+                    return Particle.valueOf(fallback);
+                } catch (IllegalArgumentException ignored) {
+                    // Try the next fallback
+                }
+            }
+
+            // If all fallbacks fail, return the first available particle
+            return Particle.values()[0];
+        }
     }
 
     /**
@@ -101,7 +121,6 @@ public class PathRecorder {
      * Cancels any existing task first to prevent duplicates.
      */
     private void startDisplayTask() {
-        // Cancel existing task if it exists
         if (displayTask != null && !displayTask.isCancelled()) {
             displayTask.cancel();
         }
@@ -142,7 +161,7 @@ public class PathRecorder {
         }
     }
 
-    // ========== Getters & Setters ==========
+
     /**
      * Gets a copy of the paths map to prevent concurrent modification issues.
      * @return A copy of the paths map
@@ -154,18 +173,13 @@ public class PathRecorder {
     /**
      * Sets the paths map with values loaded from storage.
      * Clears the existing paths and adds all the loaded ones.
-     * Also injects the ParticleManager into each path for version compatibility.
      *
      * @param loadedPaths The paths to set
      */
     public synchronized void setPaths(Map<String, Path> loadedPaths) {
         paths.clear();
         if (loadedPaths != null) {
-            // Add all paths and inject ParticleManager
-            loadedPaths.values().forEach(path -> {
-                path.setParticleManager(particleManager);
-                paths.put(path.getName(), path);
-            });
+            paths.putAll(loadedPaths);
         }
     }
 
@@ -190,7 +204,7 @@ public class PathRecorder {
         }
         return copy;
     }
-    // =======================================
+
 
     /**
      * Checks if a player is currently tracking a path.
@@ -212,17 +226,14 @@ public class PathRecorder {
      * @return Result of the operation
      */
     public synchronized Result startTrackingPath(UUID playerUUID, String playerName, String pathName) {
-        // Check if player is already tracking a path
         if (trackedPaths.containsKey(playerUUID)) {
             return new Result(false, "You are already tracking a path.");
         }
 
-        // Check if path name is already in use
         if (paths.containsKey(pathName)) {
             return new Result(false, "A path with that name already exists.");
         }
 
-        // Check if path name exceeds maximum length
         if (maxPathNameLength > 0 && pathName.length() > maxPathNameLength) {
             return new Result(false, "Path name is too long. Maximum length is " + maxPathNameLength + " characters.");
         }
@@ -232,14 +243,11 @@ public class PathRecorder {
             return new Result(false, "Path name contains invalid characters. Use only letters, numbers, spaces, underscores, and hyphens.");
         }
 
-        // Create new path with configuration values
         Path path = new Path(pathName, defaultPathRadius);
         path.setCreatedBy(playerName);
         path.setCreationDate(new Date());
         path.setMaxPoints(maxPathPoints);
-        path.setParticleManager(particleManager);
 
-        // Add to tracking maps
         trackedPaths.put(playerUUID, pathName);
         paths.put(pathName, path);
         lastTrackedTime.put(playerUUID, System.currentTimeMillis());
@@ -277,12 +285,12 @@ public class PathRecorder {
         String pathName = trackedPaths.get(playerUUID);
 
         if (pathName == null) {
-            return; // Early return if player isn't tracking
+            return;
         }
 
         Path path = paths.get(pathName);
         if (path == null) {
-            return; // Safety check in case path was removed
+            return;
         }
 
         // Add a small throttle to prevent excessive updates
@@ -295,12 +303,7 @@ public class PathRecorder {
         }
 
         lastTrackedTime.put(playerUUID, now);
-
-        // Add a small vertical offset to avoid ground-level issues
         Location checkLocation = player.getLocation().clone().add(0, 0.3, 0);
-
-        // Always use toCenterLocation for consistent block centering
-        // This ensures particles are always at the center of blocks as in the original design
         checkLocation = checkLocation.toCenterLocation();
 
         // Thread-safe check and add
@@ -317,17 +320,14 @@ public class PathRecorder {
      * @return Result of the operation
      */
     public synchronized Result removePath(String pathName) {
-        // Check if path exists
         if (!paths.containsKey(pathName)) {
             return new Result(false, "There is no path with that name. Use /tt list to see all paths.");
         }
 
-        // Check if path is being tracked
         if (trackedPaths.containsValue(pathName)) {
             return new Result(false, "The path is being tracked. Stop tracking before deleting path.");
         }
 
-        // Remove path from all players' displayed paths
         for (UUID displayingPlayerUUID : displayedPaths.keySet()) {
             Set<String> playerPaths = displayedPaths.get(displayingPlayerUUID);
             if (playerPaths != null) {
@@ -337,7 +337,6 @@ public class PathRecorder {
             }
         }
 
-        // Remove path from main map
         paths.remove(pathName);
         return new Result(true, "Success");
     }
@@ -351,21 +350,17 @@ public class PathRecorder {
      * @return Result of the operation
      */
     public synchronized Result startDisplayingPath(UUID playerUUID, String pathName) {
-        // Check if path exists
         if (!paths.containsKey(pathName)) {
             return new Result(false, "There is no path with that name.");
         }
 
-        // Get or create the player's displayed paths set
         Set<String> playerPaths = displayedPaths.computeIfAbsent(playerUUID, k ->
                 Collections.synchronizedSet(new HashSet<>()));
 
-        // Check if already displaying
         if (playerPaths.contains(pathName)) {
             return new Result(false, "You are already displaying that path.");
         }
 
-        // Add to displayed paths
         playerPaths.add(pathName);
         return new Result(true, "Success");
     }
@@ -381,20 +376,15 @@ public class PathRecorder {
     public synchronized Result stopDisplayingPath(UUID playerUUID, String pathName) {
         Set<String> playerPaths = displayedPaths.get(playerUUID);
 
-        // Check if player is displaying any paths
         if (playerPaths == null) {
             return new Result(false, "You are not displaying any paths.");
         }
-
-        // Check if player is displaying this specific path
         if (!playerPaths.contains(pathName)) {
             return new Result(false, "You are not displaying any path with that name.");
         }
 
-        // Remove from displayed paths
         playerPaths.remove(pathName);
 
-        // Clean up if player is not displaying any paths anymore
         if (playerPaths.isEmpty()) {
             displayedPaths.remove(playerUUID);
         }
@@ -405,7 +395,6 @@ public class PathRecorder {
     /**
      * Displays all paths that a player has selected to view.
      * Called periodically by the display task and by events.
-     * Uses version-compatible particle display methods.
      *
      * @param player The player to display paths for
      */
@@ -413,31 +402,17 @@ public class PathRecorder {
         UUID playerUUID = player.getUniqueId();
         Set<String> playerPaths = displayedPaths.get(playerUUID);
 
-        // Check if player is displaying any paths
         if (playerPaths == null || playerPaths.isEmpty()) {
             return;
         }
 
-        // Copy to avoid concurrent modification while iterating
         for (String pathName : new HashSet<>(playerPaths)) {
             Path path = paths.get(pathName);
             if (path != null) {
-                // Display the path to the player
                 path.displayPath(player, displayParticle);
             } else {
-                // Path has been removed but is still in player's display list
                 playerPaths.remove(pathName);
             }
         }
-    }
-
-    /**
-     * Gets the particle manager for this path recorder.
-     * Used by paths to access the particle manager.
-     *
-     * @return The particle manager instance
-     */
-    public ParticleManager getParticleManager() {
-        return particleManager;
     }
 }
