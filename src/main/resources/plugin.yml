@@ -8,6 +8,10 @@ authors: [ Alvar Sjögren ]
 description: A plugin for creating, tracking, and visualizing player movement paths in the Minecraft world.
 website: alvarsjogren.se
 
+# API information for other plugins
+load: POSTWORLD
+api-version-supported: '1.1.0'
+
 # Version compatibility information
 softdepend: []  # No required dependencies
 loadbefore: []  # No plugins that should load after this one

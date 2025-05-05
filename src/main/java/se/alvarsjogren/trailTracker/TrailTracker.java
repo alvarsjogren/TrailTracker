@@ -4,6 +4,9 @@ import org.bstats.bukkit.Metrics;
 import org.bstats.charts.SimplePie;
 import org.bstats.charts.SingleLineChart;
 import org.bukkit.plugin.java.JavaPlugin;
+import se.alvarsjogren.trailTracker.api.TrailTrackerAPI;
+import se.alvarsjogren.trailTracker.api.TrailTrackerAPIImpl;
+import se.alvarsjogren.trailTracker.api.TrailTrackerProvider;
 import se.alvarsjogren.trailTracker.commands.TTCommandExecutor;
 import se.alvarsjogren.trailTracker.commands.TTTabCompleter;
 import se.alvarsjogren.trailTracker.listeners.PlayerWalking;
@@ -25,13 +28,15 @@ public final class TrailTracker extends JavaPlugin {
     /** bStats plugin metrics */
     private Metrics metrics;
 
+    /** API implementation for external plugin access */
+    private TrailTrackerAPI api;
+
     /**
      * Called when the plugin is enabled.
      * Initializes all components and loads saved data.
      */
     @Override
     public void onEnable() {
-        // Plugin startup logic
         getLogger().info("Starting up...");
 
         // Check if the server version is compatible - we require 1.21+
@@ -69,6 +74,9 @@ public final class TrailTracker extends JavaPlugin {
 
         // Initialize bStats
         setupMetrics();
+
+        // Initialize and register API
+        initializeAPI();
 
         getLogger().info("Started successfully!");
     }
@@ -126,18 +134,34 @@ public final class TrailTracker extends JavaPlugin {
     }
 
     /**
+     * Initializes and registers the API for external plugin access.
+     */
+    private void initializeAPI() {
+        // Create API implementation
+        api = new TrailTrackerAPIImpl(this);
+
+        // Register API with provider
+        TrailTrackerProvider.registerAPI(api);
+
+        getLogger().info("TrailTracker API initialized and registered");
+    }
+
+    /**
      * Called when the plugin is disabled.
      * Saves all data and performs cleanup.
      */
     @Override
     public void onDisable() {
-        // Plugin shutdown logic
         getLogger().info("Shutting down...");
 
         // Save all paths to disk
         getLogger().info("Saving data...");
         storageManager.save();
         getLogger().info("Data saved successfully!");
+
+        // Unregister API
+        TrailTrackerProvider.unregisterAPI();
+        getLogger().info("API unregistered");
 
         getLogger().info("Shutdown successfully!");
     }
