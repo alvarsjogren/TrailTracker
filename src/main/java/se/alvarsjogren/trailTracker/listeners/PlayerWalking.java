@@ -24,14 +24,10 @@ import java.util.Objects;
  * - Detecting when players move
  * - Recording movement for players who are tracking paths
  * - Notifying players when they are on or near a path
- * - Displaying path particles
  */
 public class PlayerWalking implements Listener {
     /** Reference to the PathRecorder for tracking and displaying paths */
     private final PathRecorder pathRecorder;
-
-    /** Particle type to use for displaying paths */
-    private Particle displayParticle;
 
     /** Message template for when a player is traveling on a path */
     private String travelingMessage;
@@ -47,14 +43,6 @@ public class PlayerWalking implements Listener {
      */
     public PlayerWalking(TrailTracker plugin) {
         this.pathRecorder = plugin.pathRecorder;
-
-        // Config loads
-        try {
-            displayParticle = Particle.valueOf(plugin.getConfig().getString("default-display-particle"));
-        } catch (IllegalArgumentException e) {
-            plugin.getLogger().warning("Cant load default display particle. Will use plugin default");
-            displayParticle= Particle.HAPPY_VILLAGER;
-        }
 
         try {
             travelingMessage = Objects.requireNonNull(plugin.getConfig().getString("travel-message")).replace("{path-name}", "");
@@ -75,7 +63,6 @@ public class PlayerWalking implements Listener {
      * Handles player movement events.
      * Shows action bar messages for players on paths or recording paths.
      * Updates path recording for players who are tracking paths.
-     * Displays particles for visible paths.
      *
      * @param event The PlayerMoveEvent
      */
@@ -83,46 +70,68 @@ public class PlayerWalking implements Listener {
     public void onPlayerMove(PlayerMoveEvent event) {
         Player player = event.getPlayer();
 
+        // Only process significant movement (position changed)
         if ((event.getFrom().getX() != event.getTo().getX()) ||
                 (event.getFrom().getY() != event.getTo().getY()) ||
                 (event.getFrom().getZ() != event.getTo().getZ())) {
 
-            for (Path path : pathRecorder.getPaths().values()) {
-                // Only check paths that aren't currently being recorded
-                if (!pathRecorder.getTrackedPaths().containsValue(path.getName())) {
-                    for (Location location : path.getTrackedPath()) {
-                        Collection<Player> closePlayers = location.getNearbyPlayers(path.getRadius());
-                        for (Player closePlayer : closePlayers) {
-                            // Show action bar message to players near the path
-                            final TextComponent text = Component
-                                    .text(travelingMessage)
-                                    .color(TextColor.color(0xF5C45E))
-                                    .append(Component
-                                            .text(path.getName())
-                                            .color(TextColor.color(0xE78B48))
-                                            .decoration(TextDecoration.BOLD, true));
-                            closePlayer.sendActionBar(text);
-                        }
+            // Check if player is near any path and show action bar message if they are
+            showPathDetectionMessages(player);
+
+            // If player is tracking a path, update the path with their new position and show record message
+            if (pathRecorder.isPlayerTracking(player.getUniqueId())) {
+                showRecordingMessage(player);
+                pathRecorder.trackPaths(player);
+            }
+        }
+    }
+
+    /**
+     * Shows messages for players near existing paths
+     *
+     * @param player The player to check and show messages to
+     */
+    private void showPathDetectionMessages(Player player) {
+        for (Path path : pathRecorder.getPaths().values()) {
+            // Only check paths that aren't currently being recorded
+            if (!pathRecorder.getTrackedPaths().containsValue(path.getName())) {
+                for (Location location : path.getTrackedPath()) {
+                    Collection<Player> closePlayers = location.getNearbyPlayers(path.getRadius());
+                    if (closePlayers.contains(player)) {
+                        // Show action bar message to player near the path
+                        final TextComponent text = Component
+                                .text(travelingMessage)
+                                .color(TextColor.color(0xF5C45E))
+                                .append(Component
+                                        .text(path.getName())
+                                        .color(TextColor.color(0xE78B48))
+                                        .decoration(TextDecoration.BOLD, true));
+                        player.sendActionBar(text);
+                        return; // Only show one message at a time
                     }
                 }
             }
+        }
+    }
 
-            if (pathRecorder.isPlayerTracking(player.getUniqueId())) {
-                String pathName = pathRecorder.getTrackedPaths().get(player.getUniqueId());
-                Path path = pathRecorder.getPaths().get(pathName);
+    /**
+     * Shows recording message for a player who is tracking a path
+     *
+     * @param player The player recording a path
+     */
+    private void showRecordingMessage(Player player) {
+        String pathName = pathRecorder.getTrackedPaths().get(player.getUniqueId());
+        Path path = pathRecorder.getPaths().get(pathName);
 
-                final TextComponent text = Component
-                        .text(recordMessage)
-                        .color(TextColor.color(0xF5C45E))
-                        .append(Component
-                                .text(path.getName())
-                                .color(TextColor.color(0xE78B48))
-                                .decoration(TextDecoration.BOLD, true));
-                player.sendActionBar(text);
-                path.displayPath(player, displayParticle);
-                pathRecorder.trackPaths(player);
-            }
-            pathRecorder.displayPaths(player);
+        if (path != null) {
+            final TextComponent text = Component
+                    .text(recordMessage)
+                    .color(TextColor.color(0xF5C45E))
+                    .append(Component
+                            .text(path.getName())
+                            .color(TextColor.color(0xE78B48))
+                            .decoration(TextDecoration.BOLD, true));
+            player.sendActionBar(text);
         }
     }
 }

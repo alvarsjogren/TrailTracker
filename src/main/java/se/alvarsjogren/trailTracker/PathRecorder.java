@@ -38,7 +38,7 @@ public class PathRecorder {
     private final TrailTracker plugin;
 
     /** The particle type used for displaying paths */
-    private Particle defultDisplayParticle;
+    private Particle defaultDisplayParticle;
 
     /** Maximum allowed length for path names */
     private int maxPathNameLength;
@@ -74,10 +74,10 @@ public class PathRecorder {
         try {
             // Load particle type from config or use default
             String particleName = plugin.getConfig().getString("default-display-particle", "HAPPY_VILLAGER");
-            defultDisplayParticle = getParticleFromConfig(particleName);
+            defaultDisplayParticle = getParticleFromConfig(particleName);
         } catch (IllegalArgumentException e) {
             plugin.getLogger().warning("Invalid default-display-particle in config. Using HAPPY_VILLAGER.");
-            defultDisplayParticle = Particle.HAPPY_VILLAGER;
+            defaultDisplayParticle = Particle.HAPPY_VILLAGER;
         }
 
         // Load other configuration values
@@ -121,6 +121,7 @@ public class PathRecorder {
      * Cancels any existing task first to prevent duplicates.
      */
     private void startDisplayTask() {
+        // Cancel any existing display task to prevent duplicates
         if (displayTask != null && !displayTask.isCancelled()) {
             displayTask.cancel();
         }
@@ -130,12 +131,18 @@ public class PathRecorder {
                 plugin,
                 () -> {
                     for (Player player : plugin.getServer().getOnlinePlayers()) {
-                        displayPaths(player);
+                        // Display paths that the player has chosen to display
+                        displayVisiblePaths(player);
+
+                        // If the player is recording a path, also display that path
+                        displayActivelyRecordedPath(player);
                     }
                 },
                 20L, // Initial delay (1 second)
                 Math.max(1, particleFrequency) // Make sure frequency is at least 1 tick
         );
+
+        plugin.getLogger().info("Started path display task with frequency: " + particleFrequency + " ticks");
     }
 
     /**
@@ -160,7 +167,6 @@ public class PathRecorder {
             this.message = message;
         }
     }
-
 
     /**
      * Gets a copy of the paths map to prevent concurrent modification issues.
@@ -205,7 +211,6 @@ public class PathRecorder {
         return copy;
     }
 
-
     /**
      * Checks if a player is currently tracking a path.
      *
@@ -243,7 +248,7 @@ public class PathRecorder {
             return new Result(false, "Path name contains invalid characters. Use only letters, numbers, spaces, underscores, and hyphens.");
         }
 
-        Path path = new Path(pathName, defaultPathRadius, defultDisplayParticle);
+        Path path = new Path(pathName, defaultPathRadius, defaultDisplayParticle);
         path.setCreatedBy(playerName);
         path.setCreationDate(new Date());
         path.setMaxPoints(maxPathPoints);
@@ -394,11 +399,11 @@ public class PathRecorder {
 
     /**
      * Displays all paths that a player has selected to view.
-     * Called periodically by the display task and by events.
+     * Called periodically by the display task.
      *
      * @param player The player to display paths for
      */
-    public void displayPaths(Player player) {
+    private void displayVisiblePaths(Player player) {
         UUID playerUUID = player.getUniqueId();
         Set<String> playerPaths = displayedPaths.get(playerUUID);
 
@@ -414,5 +419,33 @@ public class PathRecorder {
                 playerPaths.remove(pathName);
             }
         }
+    }
+
+    /**
+     * Displays the path that a player is actively recording.
+     * Called periodically by the display task.
+     *
+     * @param player The player to check and display for
+     */
+    private void displayActivelyRecordedPath(Player player) {
+        UUID playerUUID = player.getUniqueId();
+        String recordingPathName = trackedPaths.get(playerUUID);
+
+        if (recordingPathName != null) {
+            Path recordingPath = paths.get(recordingPathName);
+            if (recordingPath != null) {
+                recordingPath.displayPath(player, recordingPath.getDisplayParticle());
+            }
+        }
+    }
+
+    /**
+     * Displays all paths that a player has selected to view.
+     * This method is kept for backward compatibility but delegates to the new implementation.
+     *
+     * @param player The player to display paths for
+     */
+    public void displayPaths(Player player) {
+        displayVisiblePaths(player);
     }
 }

@@ -1,5 +1,6 @@
 package se.alvarsjogren.trailTracker.commands;
 
+import org.bukkit.Particle;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
@@ -10,6 +11,7 @@ import se.alvarsjogren.trailTracker.TrailTracker;
 import se.alvarsjogren.trailTracker.commands.subCommands.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -69,7 +71,6 @@ public class TTTabCompleter implements TabCompleter {
             switch (args[0].toLowerCase()) {
                 case "remove":
                 case "info":
-                case "describe":
                 case "display":
                     // Complete with path names for commands that operate on existing paths
                     completions = suggestPartialPathNames(args, 1);
@@ -93,6 +94,34 @@ public class TTTabCompleter implements TabCompleter {
                                 completions = ((ModifyCommand) modifyCmd).getAvailableActions().stream()
                                         .filter(action -> action.toLowerCase().startsWith(args[2].toLowerCase()))
                                         .collect(Collectors.toList());
+                            }
+                        }
+                    } else if (args.length == 4) {
+                        // Find if we've completed a path name and action
+                        String pathName = findCompletedPathName(args);
+                        if (pathName != null) {
+                            // Get the index where the path name ends
+                            int pathEndIndex = -1;
+                            for (int i = 1; i < args.length - 1; i++) {
+                                String testPath = String.join(" ", Arrays.copyOfRange(args, 1, i + 1));
+                                if (testPath.equals(pathName)) {
+                                    pathEndIndex = i;
+                                    break;
+                                }
+                            }
+
+                            if (pathEndIndex != -1) {
+                                String action = args[pathEndIndex + 1].toLowerCase();
+
+                                // If action is "particle", suggest all particle types
+                                if (action.equals("particle")) {
+                                    completions = Arrays.stream(Particle.values())
+                                            .map(Particle::name)
+                                            .filter(name -> name.toLowerCase().startsWith(args[args.length - 1].toLowerCase()))
+                                            .collect(Collectors.toList());
+                                }
+                                // For "radius" and "description" actions, we don't provide completions
+                                // since they expect numbers or free text
                             }
                         }
                     }

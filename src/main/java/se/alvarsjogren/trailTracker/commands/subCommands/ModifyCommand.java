@@ -13,14 +13,14 @@ import java.util.List;
 
 /**
  * Command that allows modification of existing path properties.
- * Currently supports modifying the detection radius of a path.
+ * Supports modifying the detection radius, display particle, and description of a path.
  */
 public class ModifyCommand implements SubCommand {
     /** Reference to the PathRecorder for accessing path information */
     private final PathRecorder pathRecorder;
 
     /** List of available modification actions */
-    private final List<String> availableActions = List.of("radius", "particle");
+    private final List<String> availableActions = List.of("radius", "particle", "description");
 
     /**
      * Creates a new ModifyCommand.
@@ -48,10 +48,10 @@ public class ModifyCommand implements SubCommand {
 
     /**
      * Modifies a property of an existing path.
-     * Currently supports changing the detection radius.
+     * Supports changing the detection radius, display particle, and description.
      *
      * @param sender The command sender (must be a player)
-     * @param args The command arguments (args[1] = path name, args[2] = action, args[3] = value)
+     * @param args The command arguments (args[1] = path name, args[2] = action, args[3+] = value)
      */
     @Override
     public void perform(CommandSender sender, String[] args) {
@@ -67,8 +67,8 @@ public class ModifyCommand implements SubCommand {
             return;
         }
 
-        // Validate command format
-        if (args.length < 4) {
+        // Validate command format - minimum requires path and action
+        if (args.length < 3) {
             player.sendMessage(UITextComponents.errorMessage("Wrong usage. Use /tt modify <path> <action> <value>"));
             return;
         }
@@ -99,33 +99,53 @@ public class ModifyCommand implements SubCommand {
             }
         }
 
-        if (pathEndIndex == -1 || pathEndIndex >= args.length - 2) {
+        if (pathEndIndex == -1 || pathEndIndex >= args.length - 1) {
             player.sendMessage(UITextComponents.errorMessage("Please provide an action and value after the path name."));
             return;
         }
 
         String action = args[pathEndIndex + 1].toLowerCase();
-        String valueStr = args[pathEndIndex + 2];
 
-        // Process the action
-        handleModification(player, path, action, valueStr);
-    }
-
-    /**
-     * Handles the actual modification based on the action and value.
-     *
-     * @param player The player executing the command
-     * @param path The path to modify
-     * @param action The modification action to perform
-     * @param valueStr The string value to apply
-     */
-    private void handleModification(Player player, Path path, String action, String valueStr) {
+        // Process the action based on type
         if (!availableActions.contains(action)) {
             player.sendMessage(UITextComponents.errorMessage("Unknown action. Available actions: " +
                     String.join(", ", availableActions)));
             return;
         }
 
+        // Handle different types of modifications
+        if (action.equals("radius") || action.equals("particle")) {
+            // These actions need a single value parameter
+            if (pathEndIndex + 2 >= args.length) {
+                player.sendMessage(UITextComponents.errorMessage("Please provide a value for the " + action + "."));
+                return;
+            }
+
+            String valueStr = args[pathEndIndex + 2];
+            handleSingleValueModification(player, path, action, valueStr);
+        }
+        else if (action.equals("description")) {
+            // Description uses all remaining arguments
+            if (pathEndIndex + 2 >= args.length) {
+                player.sendMessage(UITextComponents.errorMessage("Please provide a description."));
+                return;
+            }
+
+            String description = String.join(" ", Arrays.copyOfRange(args, pathEndIndex + 2, args.length));
+            path.setDescription(description);
+            player.sendMessage(UITextComponents.successMessage("Updated description for", path.getName()));
+        }
+    }
+
+    /**
+     * Handles modifications that require a single value parameter (radius, particle).
+     *
+     * @param player The player executing the command
+     * @param path The path to modify
+     * @param action The modification action to perform
+     * @param valueStr The string value to apply
+     */
+    private void handleSingleValueModification(Player player, Path path, String action, String valueStr) {
         if (action.equals("radius")) {
             try {
                 int newRadius = Integer.parseInt(valueStr);
@@ -140,16 +160,15 @@ public class ModifyCommand implements SubCommand {
                 player.sendMessage(UITextComponents.errorMessage("Invalid radius value. Please enter a number."));
             }
         }
-
-        if (action.equals("particle")) {
+        else if (action.equals("particle")) {
             try {
                 Particle particle = Particle.valueOf(valueStr.toUpperCase());
                 path.setDisplayParticle(particle);
+                player.sendMessage(UITextComponents.successMessage("Updated display particle to " + particle.name() + " for", path.getName()));
             } catch (IllegalArgumentException e) {
-                player.sendMessage(UITextComponents.errorMessage("Invalid particle value."));
+                player.sendMessage(UITextComponents.errorMessage("Invalid particle value. Please use a valid particle name."));
             }
         }
-        // Future actions can be added here
     }
 
     /**
