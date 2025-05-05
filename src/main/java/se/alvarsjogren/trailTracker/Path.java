@@ -40,6 +40,9 @@ public class Path {
     /** Maximum number of points allowed (0 = unlimited) */
     private int maxPoints = 0; // 0 means unlimited
 
+    /** Particle that is used when path is displayed */
+    private Particle displayParticle;
+
     /** Ordered list of locations that make up the path */
     private final ArrayList<Location> trackedPath = new ArrayList<>();
 
@@ -49,9 +52,10 @@ public class Path {
      * @param name The name of the path
      * @param pathRadius The radius around path points where players are detected as "on path"
      */
-    public Path(String name, int pathRadius) {
+    public Path(String name, int pathRadius, Particle particle) {
         this.name = name;
         this.radius = pathRadius;
+        this.displayParticle = particle;
     }
 
     /**
@@ -178,6 +182,24 @@ public class Path {
      */
     public void setMaxPoints(int maxPoints) {
         this.maxPoints = maxPoints;
+    }
+
+    /**
+     * Gets the particle the path uses to display a path.
+     *
+     * @return displayParticle The particle that is displayed
+     */
+    public Particle getDisplayParticle() {
+        return displayParticle;
+    }
+
+    /**
+     * Sets the particle that is used to display a path.
+     *
+     * @param displayParticle The particle that is displayed
+     */
+    public void setDisplayParticle(Particle displayParticle) {
+        this.displayParticle = displayParticle;
     }
 
     /**

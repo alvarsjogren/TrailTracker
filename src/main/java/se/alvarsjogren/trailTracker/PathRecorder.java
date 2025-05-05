@@ -38,7 +38,7 @@ public class PathRecorder {
     private final TrailTracker plugin;
 
     /** The particle type used for displaying paths */
-    private Particle displayParticle;
+    private Particle defultDisplayParticle;
 
     /** Maximum allowed length for path names */
     private int maxPathNameLength;
@@ -74,10 +74,10 @@ public class PathRecorder {
         try {
             // Load particle type from config or use default
             String particleName = plugin.getConfig().getString("default-display-particle", "HAPPY_VILLAGER");
-            displayParticle = getParticleFromConfig(particleName);
+            defultDisplayParticle = getParticleFromConfig(particleName);
         } catch (IllegalArgumentException e) {
             plugin.getLogger().warning("Invalid default-display-particle in config. Using HAPPY_VILLAGER.");
-            displayParticle = Particle.HAPPY_VILLAGER;
+            defultDisplayParticle = Particle.HAPPY_VILLAGER;
         }
 
         // Load other configuration values
@@ -243,7 +243,7 @@ public class PathRecorder {
             return new Result(false, "Path name contains invalid characters. Use only letters, numbers, spaces, underscores, and hyphens.");
         }
 
-        Path path = new Path(pathName, defaultPathRadius);
+        Path path = new Path(pathName, defaultPathRadius, defultDisplayParticle);
         path.setCreatedBy(playerName);
         path.setCreationDate(new Date());
         path.setMaxPoints(maxPathPoints);
@@ -409,7 +409,7 @@ public class PathRecorder {
         for (String pathName : new HashSet<>(playerPaths)) {
             Path path = paths.get(pathName);
             if (path != null) {
-                path.displayPath(player, displayParticle);
+                path.displayPath(player, path.getDisplayParticle());
             } else {
                 playerPaths.remove(pathName);
             }

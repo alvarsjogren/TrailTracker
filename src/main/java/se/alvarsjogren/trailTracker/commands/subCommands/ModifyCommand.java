@@ -1,5 +1,6 @@
 package se.alvarsjogren.trailTracker.commands.subCommands;
 
+import org.bukkit.Particle;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import se.alvarsjogren.trailTracker.Path;
@@ -141,7 +142,12 @@ public class ModifyCommand implements SubCommand {
         }
 
         if (action.equals("particle")) {
-
+            try {
+                Particle particle = Particle.valueOf(valueStr.toUpperCase());
+                path.setDisplayParticle(particle);
+            } catch (IllegalArgumentException e) {
+                player.sendMessage(UITextComponents.errorMessage("Invalid particle value."));
+            }
         }
         // Future actions can be added here
     }
