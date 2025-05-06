@@ -19,7 +19,7 @@ max-path-name-length: 32
 ### Display settings ###
 # Particle to use for displaying paths
 # Available options: https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/Particle.html
-# Common choices: HAPPY_VILLAGER, VILLAGER_HAPPY, HEART, END_ROD
+# Common choices: HAPPY_VILLAGER, WAX_ON, WAX_OFF
 default-display-particle: "HAPPY_VILLAGER"
 
 # Default radius around path points where players are considered "on path"
