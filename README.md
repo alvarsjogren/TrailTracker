@@ -22,7 +22,7 @@ TrailTracker is currently in beta testing. We welcome your feedback and contribu
 
 ### Current Beta Version
 
-**Version 1.1.0-beta.1** - [Download](https://github.com/alvarsjogren/TrailTracker/releases/tag/v1.1.0-beta.1)
+**Version 1.1.0-beta.2** - [Download](https://github.com/alvarsjogren/TrailTracker/releases/tag/v1.1.0-beta.2)
 
 ### How to Participate in Testing
 
@@ -78,19 +78,46 @@ Please refer to [TESTING.md](TESTING.md) for comprehensive testing guidelines an
 TrailTracker's behavior can be customized in the `config.yml` file:
 
 ```yaml
-# Storage settings
-path-folder: "paths"  # Where path files are stored
-max-path-points: 0    # Maximum points per path (0 = unlimited)
-max-path-name-length: 32  # Maximum path name length
+### Storage settings ###
+# Folder where path files are stored
+# This is relative to the plugin's data folder
+path-folder: "paths"
 
-# Display settings
-default-display-particle: "HAPPY_VILLAGER"  # Particle type for paths
-default-path-radius: 3  # Detection radius around paths (blocks)
-particle-frequency: 5   # How often to show particles (ticks)
+# Maximum number of locations to store per path (0 = unlimited)
+# Set a limit to prevent extremely large paths from causing performance issues
+max-path-points: 0
 
-# Messages
-travel-message: "Traveling {path-name}"     # Message when on a path
-recording-message: "Recording {path-name}"  # Message when recording
+# Maximum allowed path name length
+# Prevents excessively long path names
+max-path-name-length: 32
+
+### Display settings ###
+# Particle to use for displaying paths
+# Available options: https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/Particle.html
+# Common choices: HAPPY_VILLAGER, WAX_ON, WAX_OFF
+default-display-particle: "HAPPY_VILLAGER"
+
+# Default radius around path points where players are considered "on path"
+# Larger values make paths easier to follow but less precise
+default-path-radius: 3
+
+# How frequently to display particles (in ticks, 20 ticks = 1 second)
+# Lower values show more particles but may impact performance
+particle-frequency: 5
+
+### Notification settings ###
+# How often to repeat path notifications while on the same path (in milliseconds)
+# 30000 = 30 seconds, 60000 = 1 minute, 0 = always on
+path-notification-reminder: 5000
+
+### Messages ###
+# Action bar text when traveling paths. {path-name} will be replaced with the path name
+# This appears above the hotbar when a player is walking on or near a path
+travel-message: "Traveling {path-name}"
+
+# Action bar text when recording paths. {path-name} will be replaced with the path name
+# This appears above the hotbar when a player is actively recording a path
+recording-message: "Recording {path-name}"
 ```
 
 ## Example Usage
@@ -103,8 +130,8 @@ recording-message: "Recording {path-name}"  # Message when recording
 
 **Viewing the Tour:**
 1. Show all available paths: `/tt list`
-2. Start following the particles: `/tt display on ServerTour`
-3. When done, turn off the display: `/tt display off ServerTour`
+2. Start following the particles: `/tt display ServerTour`
+3. When done, turn off the display: `/tt display ServerTour`
 
 ## Upgrading from Previous Versions
 
