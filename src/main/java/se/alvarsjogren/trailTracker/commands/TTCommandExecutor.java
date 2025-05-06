@@ -37,6 +37,7 @@ public class TTCommandExecutor implements CommandExecutor {
         subCommands.add(new StartCommand(plugin));
         subCommands.add(new StopCommand(plugin));
         subCommands.add(new ListCommand(plugin));
+        subCommands.add(new DisplayCommand(plugin));
         subCommands.add(new RemoveCommand(plugin));
         subCommands.add(new InfoCommand(plugin));
         subCommands.add(new ModifyCommand(plugin));
