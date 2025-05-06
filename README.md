@@ -28,7 +28,7 @@ TrailTracker allows players to record their movements as paths, save them for fu
 ## Installation
 
 1. Download the latest TrailTracker.jar from [Releases](https://github.com/alvarsjogren/trailtracker/releases)
-2. Ensure your server is running **Paper 1.21.1+ or compatible fork**
+2. Ensure your server is running **Paper 1.21.x or compatible fork**
 3. Place the .jar file in your server's `plugins` folder
 4. Restart your server or run `/reload confirm`
 5. The default configuration will be generated automatically
