@@ -13,6 +13,7 @@ import se.alvarsjogren.trailTracker.commands.subCommands.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -76,13 +77,83 @@ public class TTTabCompleter implements TabCompleter {
                     completions = suggestPartialPathNames(args, 1);
                     break;
                 case "modify":
+                    // Get all path names from recorder
+                    Map<String, Path> availablePaths = pathRecorder.getPaths();
+
+                    // Check if we have a complete path name
+                    for (String path : availablePaths.keySet()) {
+                        String[] pathWords = path.split(" ");
+
+                        // If path has multiple words, check if it's fully typed
+                        if (pathWords.length > 1) {
+                            // Check if we have enough args to potentially contain this path
+                            if (args.length >= 1 + pathWords.length) {
+                                boolean matches = true;
+
+                                // Check if all words of the path are present in args
+                                for (int i = 0; i < pathWords.length; i++) {
+                                    if (!args[i + 1].equalsIgnoreCase(pathWords[i])) {
+                                        matches = false;
+                                        break;
+                                    }
+                                }
+
+                                // If the path is fully typed, suggest actions
+                                if (matches) {
+                                    // We're right after a complete path name - suggest actions
+                                    if (args.length == 1 + pathWords.length) {
+                                        // User has typed the full path, now suggest actions
+                                        SubCommand modifyCmd = subCommands.stream()
+                                                .filter(cmd -> cmd.getName().equals("modify"))
+                                                .findFirst()
+                                                .orElse(null);
+
+                                        if (modifyCmd instanceof ModifyCommand) {
+                                            return ((ModifyCommand) modifyCmd).getAvailableActions();
+                                        }
+                                    }
+                                    // User is typing an action
+                                    else if (args.length == 2 + pathWords.length) {
+                                        String typed = args[1 + pathWords.length].toLowerCase();
+                                        SubCommand modifyCmd = subCommands.stream()
+                                                .filter(cmd -> cmd.getName().equals("modify"))
+                                                .findFirst()
+                                                .orElse(null);
+
+                                        if (modifyCmd instanceof ModifyCommand) {
+                                            return ((ModifyCommand) modifyCmd).getAvailableActions().stream()
+                                                    .filter(action -> action.toLowerCase().startsWith(typed))
+                                                    .collect(Collectors.toList());
+                                        }
+                                    }
+                                    // User is typing a value for "particle" action
+                                    else if (args.length == 3 + pathWords.length) {
+                                        String action = args[1 + pathWords.length].toLowerCase();
+                                        String typed = args[2 + pathWords.length].toLowerCase();
+
+                                        if (action.equals("particle")) {
+                                            return Arrays.stream(Particle.values())
+                                                    .map(Particle::name)
+                                                    .filter(name -> name.toLowerCase().startsWith(typed))
+                                                    .collect(Collectors.toList());
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // If we reach here, either:
+                    // 1. The path is single-word
+                    // 2. The path isn't completely typed yet
+                    // Handle single-word paths specifically
                     if (args.length == 2) {
-                        // Suggest path names for the first argument of modify
+                        // Only try tab completion for a path name
                         completions = suggestPartialPathNames(args, 1);
                     } else if (args.length == 3) {
-                        // Find if we've completed a path name
-                        String pathName = findCompletedPathName(args);
-                        if (pathName != null) {
+                        // Check if arg[1] is a complete path (no spaces)
+                        String potentialPath = args[1];
+                        if (availablePaths.containsKey(potentialPath)) {
                             // Get the modify command to access available actions
                             SubCommand modifyCmd = subCommands.stream()
                                     .filter(cmd -> cmd.getName().equals("modify"))
@@ -95,34 +166,40 @@ public class TTTabCompleter implements TabCompleter {
                                         .filter(action -> action.toLowerCase().startsWith(args[2].toLowerCase()))
                                         .collect(Collectors.toList());
                             }
+                        } else {
+                            // Could still be typing a multi-word path
+                            completions = suggestPartialPathNames(args, 1);
                         }
                     } else if (args.length == 4) {
-                        // Find if we've completed a path name and action
-                        String pathName = findCompletedPathName(args);
-                        if (pathName != null) {
-                            // Get the index where the path name ends
-                            int pathEndIndex = -1;
-                            for (int i = 1; i < args.length - 1; i++) {
-                                String testPath = String.join(" ", Arrays.copyOfRange(args, 1, i + 1));
-                                if (testPath.equals(pathName)) {
-                                    pathEndIndex = i;
-                                    break;
-                                }
-                            }
+                        // First check if args[1] + args[2] is a path (has a space)
+                        String potentialPath = args[1] + " " + args[2];
+                        if (availablePaths.containsKey(potentialPath)) {
+                            // args[3] should be an action
+                            SubCommand modifyCmd = subCommands.stream()
+                                    .filter(cmd -> cmd.getName().equals("modify"))
+                                    .findFirst()
+                                    .orElse(null);
 
-                            if (pathEndIndex != -1) {
-                                String action = args[pathEndIndex + 1].toLowerCase();
-
-                                // If action is "particle", suggest all particle types
-                                if (action.equals("particle")) {
-                                    completions = Arrays.stream(Particle.values())
-                                            .map(Particle::name)
-                                            .filter(name -> name.toLowerCase().startsWith(args[args.length - 1].toLowerCase()))
-                                            .collect(Collectors.toList());
-                                }
-                                // For "radius" and "description" actions, we don't provide completions
-                                // since they expect numbers or free text
+                            if (modifyCmd instanceof ModifyCommand) {
+                                // Suggest available actions
+                                completions = ((ModifyCommand) modifyCmd).getAvailableActions().stream()
+                                        .filter(action -> action.toLowerCase().startsWith(args[3].toLowerCase()))
+                                        .collect(Collectors.toList());
                             }
+                        } else if (availablePaths.containsKey(args[1])) {
+                            // args[1] is the path, args[2] is the action
+                            String action = args[2].toLowerCase();
+
+                            // If the action is "particle", suggest particle types
+                            if (action.equals("particle")) {
+                                completions = Arrays.stream(Particle.values())
+                                        .map(Particle::name)
+                                        .filter(name -> name.toLowerCase().startsWith(args[3].toLowerCase()))
+                                        .collect(Collectors.toList());
+                            }
+                        } else {
+                            // Could still be typing a multi-word path
+                            completions = suggestPartialPathNames(args, 1);
                         }
                     }
                     break;
@@ -149,22 +226,29 @@ public class TTTabCompleter implements TabCompleter {
                     .collect(Collectors.toList());
         } else {
             // We might be typing a path name with spaces
-            String partialPath = String.join(" ", java.util.Arrays.copyOfRange(args, startIndex, args.length));
+            String partialPath = String.join(" ", Arrays.copyOfRange(args, startIndex, args.length - 1));
+
+            if (!partialPath.isEmpty()) {
+                partialPath += " ";
+            }
+
+            // Add the last argument if it exists
+            String lastArg = args[args.length - 1];
+            String finalPartialPath = partialPath + lastArg;
 
             // Get all paths that start with our partial path
             List<String> matchingPaths = pathRecorder.getPaths().values().stream()
                     .map(Path::getName)
-                    .filter(name -> name.toLowerCase().startsWith(partialPath.toLowerCase()))
+                    .filter(name -> name.toLowerCase().startsWith(finalPartialPath.toLowerCase()))
                     .collect(Collectors.toList());
 
-            // For tab completion with spaces, we only want to suggest the next word,
-            // not the entire remaining path
+            // For tab completion with spaces, we want to suggest the next word or completion
             List<String> nextWordSuggestions = new ArrayList<>();
             for (String fullPath : matchingPaths) {
                 // Only process if this path has more content than what we've already typed
-                if (fullPath.length() > partialPath.length()) {
+                if (fullPath.length() > finalPartialPath.length()) {
                     // Extract just the next part after what we've already typed
-                    String remainingPart = fullPath.substring(partialPath.length());
+                    String remainingPart = fullPath.substring(finalPartialPath.length());
 
                     // If there's a space in the remaining part, only get the text up to that space
                     int nextSpacePos = remainingPart.indexOf(' ');
@@ -173,7 +257,10 @@ public class TTTabCompleter implements TabCompleter {
                     }
 
                     // Add this as the suggested completion
-                    nextWordSuggestions.add(args[args.length - 1] + remainingPart);
+                    nextWordSuggestions.add(lastArg + remainingPart);
+                } else if (fullPath.length() == finalPartialPath.length() && fullPath.equalsIgnoreCase(finalPartialPath)) {
+                    // Exact match, add to suggestions to support continuing to the action
+                    nextWordSuggestions.add(lastArg);
                 }
             }
 
@@ -190,15 +277,20 @@ public class TTTabCompleter implements TabCompleter {
      */
     private String findCompletedPathName(String[] args) {
         // Try different combinations for path name
+        String longestMatch = null;
+
         for (int i = 1; i < args.length - 1; i++) {
             // Try using i arguments for the path name
-            String pathName = String.join(" ", java.util.Arrays.copyOfRange(args, 1, i + 1));
+            String pathName = String.join(" ", Arrays.copyOfRange(args, 1, i + 1));
 
             if (pathRecorder.getPaths().containsKey(pathName)) {
-                return pathName;
+                // Save the longest path match
+                if (longestMatch == null || pathName.length() > longestMatch.length()) {
+                    longestMatch = pathName;
+                }
             }
         }
 
-        return null;
+        return longestMatch;
     }
 }
