@@ -91,7 +91,7 @@ particle-frequency: 5
 
 ### Notification settings ###
 # How often to repeat path notifications while on the same path (in milliseconds)
-path-notification-reminder: 5000
+path-notification-reminder: 0
 
 ### Messages ###
 # Action bar text when traveling paths. {path-name} will be replaced with the path name
