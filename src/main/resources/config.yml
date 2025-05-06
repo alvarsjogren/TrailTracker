@@ -19,7 +19,7 @@ max-path-name-length: 32
 ### Display settings ###
 # Particle to use for displaying paths
 # Available options: https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/Particle.html
-# Common choices: HAPPY_VILLAGER, VILLAGER_HAPPY, COMPOSTER, HEART, END_ROD
+# Common choices: HAPPY_VILLAGER, VILLAGER_HAPPY, HEART, END_ROD
 default-display-particle: "HAPPY_VILLAGER"
 
 # Default radius around path points where players are considered "on path"
@@ -29,6 +29,11 @@ default-path-radius: 3
 # How frequently to display particles (in ticks, 20 ticks = 1 second)
 # Lower values show more particles but may impact performance
 particle-frequency: 5
+
+### Notification settings ###
+# How often to repeat path notifications while on the same path (in milliseconds)
+# 30000 = 30 seconds, 60000 = 1 minute, 0 = always on
+path-notification-reminder: 5000
 
 ### Messages ###
 # Action bar text when traveling paths. {path-name} will be replaced with the path name

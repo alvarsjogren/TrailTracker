@@ -9,7 +9,7 @@ import se.alvarsjogren.trailTracker.api.TrailTrackerAPIImpl;
 import se.alvarsjogren.trailTracker.api.TrailTrackerProvider;
 import se.alvarsjogren.trailTracker.commands.TTCommandExecutor;
 import se.alvarsjogren.trailTracker.commands.TTTabCompleter;
-import se.alvarsjogren.trailTracker.listeners.PlayerWalking;
+import se.alvarsjogren.trailTracker.listeners.PlayerHandler;
 import se.alvarsjogren.trailTracker.utilities.StorageManager;
 import se.alvarsjogren.trailTracker.utilities.VersionCompatibility;
 
@@ -70,7 +70,7 @@ public final class TrailTracker extends JavaPlugin {
         getCommand("tt").setTabCompleter(ttTabCompleter);
 
         // Register event listeners
-        getServer().getPluginManager().registerEvents(new PlayerWalking(this), this);
+        getServer().getPluginManager().registerEvents(new PlayerHandler(this), this);
 
         // Initialize bStats
         setupMetrics();
