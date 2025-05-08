@@ -3,6 +3,7 @@ package se.alvarsjogren.trailTracker;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.entity.Player;
+import se.alvarsjogren.trailTracker.utilities.ParticleUtilities;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -199,7 +200,11 @@ public class Path {
      * @param displayParticle The particle that is displayed
      */
     public void setDisplayParticle(Particle displayParticle) {
-        this.displayParticle = displayParticle;
+        if (ParticleUtilities.isProblematicParticle(displayParticle)) {
+            this.displayParticle = ParticleUtilities.getDefaultParticle();
+        } else {
+            this.displayParticle = displayParticle;
+        }
     }
 
     /**

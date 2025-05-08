@@ -4,13 +4,14 @@ import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
+import se.alvarsjogren.trailTracker.utilities.ParticleUtilities;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Records and manages player movement paths in the Minecraft world.
- * Thread-safe implementation for handling concurrent access in a multi-threaded server environment.
+ * Thread-safe implementation for handling concurrent access in a multithreaded server environment.
  *
  * The PathRecorder acts as the central coordinator for:
  * - Creating, updating, and removing paths
@@ -19,7 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * - Handling all path-related operations with proper thread safety
  *
  * It uses ConcurrentHashMap and synchronized collections to ensure thread safety
- * in the multi-threaded Bukkit server environment.
+ * in the multithreaded Bukkit server environment.
  */
 public class PathRecorder {
     /** Master collection of all paths by name */
@@ -98,20 +99,40 @@ public class PathRecorder {
      */
     private Particle getParticleFromConfig(String configName) {
         try {
-            return Particle.valueOf(configName);
+            Particle configParticle = Particle.valueOf(configName);
+
+            // Check if the configured particle is problematic
+            if (ParticleUtilities.isProblematicParticle(configParticle)) {
+                plugin.getLogger().warning("Particle type '" + configName + "' requires additional data and cannot be used. Using a fallback particle.");
+                return ParticleUtilities.getDefaultParticle();
+            }
+
+            return configParticle;
         } catch (IllegalArgumentException e) {
             plugin.getLogger().warning("Particle type '" + configName + "' not found in this Minecraft version.");
 
-            // Try multiple fallbacks in case some particles don't exist in older versions
+            // Try multiple fallbacks
             for (String fallback : new String[]{"HAPPY_VILLAGER", "VILLAGER_HAPPY", "HEART", "CRIT"}) {
                 try {
-                    return Particle.valueOf(fallback);
+                    Particle fallbackParticle = Particle.valueOf(fallback);
+
+                    // Ensure the fallback is not problematic
+                    if (!ParticleUtilities.isProblematicParticle(fallbackParticle)) {
+                        return fallbackParticle;
+                    }
                 } catch (IllegalArgumentException ignored) {
                     // Try the next fallback
                 }
             }
 
-            // If all fallbacks fail, return the first available particle
+            // Find the first available non-problematic particle
+            for (Particle particle : Particle.values()) {
+                if (!ParticleUtilities.isProblematicParticle(particle)) {
+                    return particle;
+                }
+            }
+
+            // Last resort fallback
             return Particle.values()[0];
         }
     }
@@ -303,7 +324,7 @@ public class PathRecorder {
         long now = System.currentTimeMillis();
         Long lastTime = lastTrackedTime.get(playerUUID);
 
-        if (lastTime != null && now - lastTime < 100) { // Reduced from 200ms to 100ms for more granular tracking
+        if (lastTime != null && now - lastTime < 50) { // Reduced from 100ms to 50ms for 1.1.0.beta.2.1
             return;
         }
 

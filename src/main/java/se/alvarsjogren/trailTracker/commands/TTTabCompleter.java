@@ -9,6 +9,7 @@ import se.alvarsjogren.trailTracker.Path;
 import se.alvarsjogren.trailTracker.PathRecorder;
 import se.alvarsjogren.trailTracker.TrailTracker;
 import se.alvarsjogren.trailTracker.commands.subCommands.*;
+import se.alvarsjogren.trailTracker.utilities.ParticleUtilities;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -132,9 +133,10 @@ public class TTTabCompleter implements TabCompleter {
                                         String typed = args[2 + pathWords.length].toLowerCase();
 
                                         if (action.equals("particle")) {
-                                            return Arrays.stream(Particle.values())
+                                            completions = Arrays.stream(Particle.values())
+                                                    .filter(particle -> !ParticleUtilities.isProblematicParticle(particle))
                                                     .map(Particle::name)
-                                                    .filter(name -> name.toLowerCase().startsWith(typed))
+                                                    .filter(name -> name.toLowerCase().startsWith(args[args.length - 1].toLowerCase()))
                                                     .collect(Collectors.toList());
                                         }
                                     }

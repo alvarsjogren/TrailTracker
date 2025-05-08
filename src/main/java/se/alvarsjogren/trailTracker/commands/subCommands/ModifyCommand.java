@@ -6,6 +6,7 @@ import org.bukkit.entity.Player;
 import se.alvarsjogren.trailTracker.Path;
 import se.alvarsjogren.trailTracker.PathRecorder;
 import se.alvarsjogren.trailTracker.TrailTracker;
+import se.alvarsjogren.trailTracker.utilities.ParticleUtilities;
 import se.alvarsjogren.trailTracker.utilities.UITextComponents;
 
 import java.util.Arrays;
@@ -163,6 +164,14 @@ public class ModifyCommand implements SubCommand {
         else if (action.equals("particle")) {
             try {
                 Particle particle = Particle.valueOf(valueStr.toUpperCase());
+
+                // Check if the particle is problematic
+                if (ParticleUtilities.isProblematicParticle(particle)) {
+                    player.sendMessage(UITextComponents.errorMessage("Particle " + particle.name() +
+                            " requires additional data and cannot be used. Please select a different particle."));
+                    return;
+                }
+
                 path.setDisplayParticle(particle);
                 player.sendMessage(UITextComponents.successMessage("Updated display particle to " + particle.name() + " for", path.getName()));
             } catch (IllegalArgumentException e) {
