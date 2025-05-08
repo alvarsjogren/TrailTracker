@@ -5,6 +5,7 @@ import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -127,6 +128,7 @@ public class PlayerHandler implements Listener {
         String currentPathName = currentPlayerPaths.get(playerUUID);
         boolean foundPath = false;
         String foundPathName = null;
+        World playerWorld = player.getWorld();
 
         // Check all paths to see if player is near any of them
         for (Path path : pathRecorder.getPaths().values()) {
@@ -134,10 +136,13 @@ public class PlayerHandler implements Listener {
             if (!pathRecorder.getTrackedPaths().containsValue(path.getName())) {
                 // Check if player is near any point on this path
                 for (Location location : path.getTrackedPath()) {
-                    if (player.getLocation().distance(location) <= path.getRadius()) {
-                        foundPath = true;
-                        foundPathName = path.getName();
-                        break;
+                    // Make sure the path location is in the same world as the player
+                    if (location.getWorld() != null && location.getWorld().equals(playerWorld)) {
+                        if (player.getLocation().distance(location) <= path.getRadius()) {
+                            foundPath = true;
+                            foundPathName = path.getName();
+                            break;
+                        }
                     }
                 }
 
