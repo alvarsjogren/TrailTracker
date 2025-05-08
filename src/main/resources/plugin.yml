@@ -1,6 +1,6 @@
 # Plugin metadata for TrailTracker
 name: TrailTracker
-version: '1.1.0-beta.2'
+version: '1.1.0-beta.2.1'
 main: se.alvarsjogren.trailTracker.TrailTracker
 api-version: '1.21'
 prefix: TrailTracker

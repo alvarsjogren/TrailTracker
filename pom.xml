@@ -6,7 +6,7 @@
 
     <groupId>se.alvarsjogren</groupId>
     <artifactId>TrailTracker</artifactId>
-    <version>1.1.0-beta.2</version>
+    <version>1.1.0-beta.2.1</version>
     <packaging>jar</packaging>
 
     <name>TrailTracker</name>
