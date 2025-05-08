@@ -16,6 +16,11 @@ import java.util.UUID;
 public class TrailTrackerAPIImpl implements TrailTrackerAPI {
     private final TrailTracker plugin;
 
+    /**
+     * Creates a new API implementation instance.
+     *
+     * @param plugin The main plugin instance
+     */
     public TrailTrackerAPIImpl(TrailTracker plugin) {
         this.plugin = plugin;
     }

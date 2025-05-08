@@ -13,10 +13,6 @@ import java.lang.reflect.Type;
  * This class enables GSON to properly convert Location objects to/from JSON format
  * for persistent storage. Without this adapter, Location objects cannot be directly
  * serialized due to their complex structure and references to Bukkit objects.
- *
- * The adapter stores:
- * - World name (as a string)
- * - X, Y, Z coordinates (as doubles)
  */
 public class LocationAdapter implements JsonSerializer<Location>, JsonDeserializer<Location> {
 

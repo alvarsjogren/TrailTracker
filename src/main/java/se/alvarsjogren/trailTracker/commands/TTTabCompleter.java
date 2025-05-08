@@ -20,12 +20,6 @@ import java.util.stream.Collectors;
 /**
  * Tab completer for TrailTracker commands.
  * Provides command completion suggestions based on context.
- *
- * This class enhances user experience by offering contextual tab completion options
- * that change based on:
- * - Which subcommand is being used
- * - Which argument position the user is currently typing
- * - The current state of paths in the system
  */
 public class TTTabCompleter implements TabCompleter {
     /** List of all registered subcommands */

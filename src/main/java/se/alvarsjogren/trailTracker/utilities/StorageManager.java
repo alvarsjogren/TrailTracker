@@ -12,15 +12,6 @@ import java.util.Map;
 /**
  * Manages the storage and retrieval of path data.
  * Handles serialization and deserialization of path objects to/from JSON files.
- *
- * The StorageManager is responsible for:
- * - Saving paths to JSON files on disk
- * - Loading paths from JSON files on startup
- * - Handling file operations safely with proper error checking
- * - Managing the storage directory structure
- *
- * Uses Google's Gson library for JSON serialization with custom type adapters
- * for Bukkit-specific classes like Location.
  */
 public class StorageManager {
     /**

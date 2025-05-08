@@ -4,8 +4,6 @@ import org.bukkit.Particle;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Utility class for managing particle compatibility in TrailTracker.
@@ -29,6 +27,9 @@ public class ParticleUtilities {
 
     /**
      * Checks if a particle is problematic and cannot be used with the simplified spawning method.
+     *
+     * @param particle The particle to check
+     * @return true if the particle requires additional data and can't be used, false otherwise
      */
     public static boolean isProblematicParticle(Particle particle) {
         return PROBLEMATIC_PARTICLES.contains(particle);
@@ -36,6 +37,8 @@ public class ParticleUtilities {
 
     /**
      * Gets a copy of the set of problematic particles.
+     *
+     * @return A list of particles that require additional data parameters
      */
     public static ArrayList<Particle> getProblematicParticles() {
         return PROBLEMATIC_PARTICLES;
@@ -43,6 +46,8 @@ public class ParticleUtilities {
 
     /**
      * Gets a safe default particle that is known to work with the simplified spawning method.
+     *
+     * @return A particle that's safe to use without additional parameters
      */
     public static Particle getDefaultParticle() {
         return Particle.HAPPY_VILLAGER;

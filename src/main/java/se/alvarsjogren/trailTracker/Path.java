@@ -11,40 +11,51 @@ import java.util.Date;
 /**
  * Represents a recorded path in the world.
  * A path consists of a series of locations that can be displayed with particles.
- *
- * The Path class stores all the information about a path, including:
- * - The list of locations that make up the path
- * - Metadata such as name, description, and creator
- * - Configuration for how the path should be displayed
- *
- * Paths are serialized to/from JSON for persistent storage.
  */
 public class Path {
-    /** Current version of the path data format, used for backward compatibility */
+    /**
+     * Current version of the path data format, used for backward compatibility
+     */
     private int version;
 
-    /** Unique name identifier for this path */
+    /**
+     * Unique name identifier for this path
+     */
     private final String name;
 
-    /** User-friendly description of the path */
+    /**
+     * User-friendly description of the path
+     */
     private String description = "No description for this path yet";
 
-    /** Detection radius around path points (in blocks) */
+    /**
+     * Detection radius around path points (in blocks)
+     */
     private int radius;
 
-    /** When this path was first created */
+    /**
+     * When this path was first created
+     */
     private Date creationDate = new Date();
 
-    /** Username of player who created the path */
+    /**
+     * Username of player who created the path
+     */
     private String createdBy = "Unknown";
 
-    /** Maximum number of points allowed (0 = unlimited) */
+    /**
+     * Maximum number of points allowed (0 = unlimited)
+     */
     private int maxPoints = 0; // 0 means unlimited
 
-    /** Particle that is used when path is displayed */
+    /**
+     * Particle that is used when path is displayed
+     */
     private Particle displayParticle;
 
-    /** Ordered list of locations that make up the path */
+    /**
+     * Ordered list of locations that make up the path
+     */
     private final ArrayList<Location> trackedPath = new ArrayList<>();
 
     /**
@@ -52,6 +63,7 @@ public class Path {
      *
      * @param name The name of the path
      * @param pathRadius The radius around path points where players are detected as "on path"
+     * @param particle The particle type used for displaying the path
      */
     public Path(String name, int pathRadius, Particle particle) {
         this.name = name;
@@ -59,143 +71,69 @@ public class Path {
         this.displayParticle = particle;
     }
 
-    /**
-     * Gets the name of the path.
-     *
-     * @return The path name
-     */
     public String getName() {
         return name;
     }
 
-    /**
-     * Gets the description of the path.
-     *
-     * @return The path description
-     */
     public String getDescription() {
         return description;
     }
 
-    /**
-     * Sets the description of the path.
-     *
-     * @param pathDescription The new description
-     */
     public void setDescription(String pathDescription) {
         this.description = pathDescription;
     }
 
-    /**
-     * Gets the list of locations that make up this path.
-     *
-     * @return An ArrayList of locations
-     */
     public ArrayList<Location> getTrackedPath() {
         return trackedPath;
     }
 
-    /**
-     * Gets the version of this path's data format.
-     *
-     * @return The path version
-     */
     public int getVersion() {
         return this.version;
     }
 
-    /**
-     * Sets the version of this path's data format.
-     *
-     * @param pathVersion The version number
-     */
     public void setVersion(int pathVersion) {
         this.version = pathVersion;
     }
 
-    /**
-     * Gets the detection radius around path points.
-     *
-     * @return The radius in blocks
-     */
     public int getRadius() {
         return radius;
     }
 
-    /**
-     * Sets the detection radius around path points.
-     *
-     * @param radius The radius in blocks
-     */
     public void setRadius(int radius) {
         this.radius = radius;
     }
 
-    /**
-     * Gets the creator of this path.
-     *
-     * @return The name of the creator
-     */
     public String getCreatedBy() {
         return createdBy;
     }
 
-    /**
-     * Sets the creator of this path.
-     *
-     * @param createdBy The name of the creator
-     */
     public void setCreatedBy(String createdBy) {
         this.createdBy = createdBy;
     }
 
-    /**
-     * Gets the creation date of this path.
-     *
-     * @return The creation date
-     */
     public Date getCreationDate() {
         return creationDate;
     }
 
-    /**
-     * Sets the creation date of this path.
-     *
-     * @param creationDate The creation date
-     */
     public void setCreationDate(Date creationDate) {
         this.creationDate = creationDate;
     }
 
-    /**
-     * Gets the maximum number of points allowed for this path.
-     *
-     * @return The maximum points (0 = unlimited)
-     */
     public int getMaxPoints() {
         return maxPoints;
     }
 
-    /**
-     * Sets the maximum number of points allowed for this path.
-     *
-     * @param maxPoints The maximum points (0 = unlimited)
-     */
     public void setMaxPoints(int maxPoints) {
         this.maxPoints = maxPoints;
     }
 
-    /**
-     * Gets the particle the path uses to display a path.
-     *
-     * @return displayParticle The particle that is displayed
-     */
     public Particle getDisplayParticle() {
         return displayParticle;
     }
 
     /**
      * Sets the particle that is used to display a path.
+     * Validates the particle type to ensure it's compatible.
      *
      * @param displayParticle The particle that is displayed
      */

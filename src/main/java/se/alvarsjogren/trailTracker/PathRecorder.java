@@ -12,15 +12,6 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Records and manages player movement paths in the Minecraft world.
  * Thread-safe implementation for handling concurrent access in a multithreaded server environment.
- *
- * The PathRecorder acts as the central coordinator for:
- * - Creating, updating, and removing paths
- * - Tracking player movement to record paths
- * - Managing which paths are being displayed to which players
- * - Handling all path-related operations with proper thread safety
- *
- * It uses ConcurrentHashMap and synchronized collections to ensure thread safety
- * in the multithreaded Bukkit server environment.
  */
 public class PathRecorder {
     /** Master collection of all paths by name */

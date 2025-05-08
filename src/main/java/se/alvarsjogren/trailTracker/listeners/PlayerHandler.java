@@ -20,12 +20,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Listens for player movement events to handle path tracking and display.
- *
- * This class is responsible for:
- * - Detecting when players move
- * - Recording movement for players who are tracking paths
- * - Notifying players when they are on or near a path
- * - Managing notification timing for improved user experience
  */
 public class PlayerHandler implements Listener {
     /** Reference to the PathRecorder for tracking and displaying paths */
